@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<MetatagList>
+  <Metatag id="00000000" pids="12345678 12345677">
+    <Text>1</Text>
+    <Type>Type 1</Type>
+  </Metatag>
+  <Metatag id="FFFFFFFF" pids="12345678">
+    <Text>2</Text>
+    <Type>Type 2</Type>
+  </Metatag>
+  <Metatag id="00042000">
+    <Text>3</Text>
+    <Type>Type 3</Type>
+  </Metatag>
+</MetatagList>
