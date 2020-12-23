@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<MetatagList>
+  <Metatag id="1B47D478" pids="2E0AF76C">
+    <Context>The Perm Sta</Context>
+    <Text>Th</Text>
+    <Type>The New York Times</Type>
+    <Class>Work</Class>
+    <Instance>http://dbpedia.org/resource/The_New_York_Times</Instance>
+  </Metatag>
+  ...
+  <Metatag id="13E0DD10" pids="2E0AF76C">
+    <Context>The Perm State University is locat</Context>
+    <Text>Perm State Universit</Text>
+    <Type>Perm State University</Type>
+    <Class>Agent</Class>
+    <Instance>http://dbpedia.org/resource/Perm_State_University</Instance>
+  </Metatag>
+  ...
+  <Metatag id="2E5152CA" pids="2E0AF76C">
+    <Context>a city in Russia.</Context>
+    <Text>Russi</Text>
+    <Type>Russia</Type>
+    <Class>PopulatedPlace</Class>
+    <Instance>http://dbpedia.org/resource/Russia</Instance>
+  </Metatag>
+  <Metatag id="55A75663" pids="2E0AF76C">
+    <Context>a city in Russia.</Context>
+    <Text>Russia</Text>
+    <Type>Soviet Union</Type>
+    <Class>PopulatedPlace</Class>
+    <Instance>http://dbpedia.org/resource/Soviet_Union</Instance>
+  </Metatag>
+</MetatagList>

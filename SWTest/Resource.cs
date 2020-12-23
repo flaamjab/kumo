@@ -5,7 +5,7 @@ namespace SWTest
         static public string[] SampleDocuments { get; } =
         new string[]
         {
-            // "../../../resource/Sample.docx",
+            "../../../resource/Sample.docx",
             "../../../resource/MrBean.docx"
         };
     }

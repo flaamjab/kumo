@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SWTest
 {
-    public class OntotextAnnotatorTests
+    public class WikifierAnnotatorTests
     {
 
         [Test]
@@ -27,7 +27,7 @@ namespace SWTest
                     text = d.Text();
                 }
 
-                var annotator = new OntotextAnnotator();
+                var annotator = new WikifierAnnotator();
                 var metatags = await annotator.AnnotateAsync(text);
 
                 using (var me = MetatagEditor.Open(r))
@@ -42,7 +42,8 @@ namespace SWTest
                         catch (InvalidMetatagException e)
                         {
                             System.Console.Error.WriteLine(
-                                $"Failed to add a metatag: \"{e.Message}\""
+                                $"Failed to add a metatag: \"{e.Message}\"\n"
+                                + $"{mt.Context}"
                             );
                         }
                     }

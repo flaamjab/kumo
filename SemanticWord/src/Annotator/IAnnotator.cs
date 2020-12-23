@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SemanticWord
 {
@@ -9,7 +10,9 @@ namespace SemanticWord
         /// </summary>
         interface IAnnotator
         {
-            IList<Metatag> Annotations { get; }
+            Task<IList<Metatag>> AnnotateAsync(
+                string text
+            );
         }
     }
 }

@@ -240,7 +240,7 @@ namespace SemanticWord
             _mtToMtb = new Dictionary<Metatag, MetatagBundle>();
             foreach (var p in mtParts)
             {
-                using 
+                using
                 (
                     var s = p.GetStream(
                         FileMode.Open, FileAccess.Read
