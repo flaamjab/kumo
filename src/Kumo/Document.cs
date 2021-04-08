@@ -8,9 +8,18 @@ namespace Kumo
     /// <summary>Represents a Word document.</summary>
     public class Document : IDisposable, IRange
     {
+        private WordprocessingDocument _document;
+        private Annotations _annotations;
+
+        private Document(WordprocessingDocument document)
+        {
+            _document = document;
+            _annotations = new Annotations(_document.MainDocumentPart);
+        }
+
         public static Document Open(
             string path,
-            bool isEditable)
+            bool isEditable = false)
         {
             var options = new OpenOptions();
             return Document.Open(path, isEditable, options);
@@ -18,7 +27,7 @@ namespace Kumo
 
         public static Document Open(
             Stream stream,
-            bool isEditable)
+            bool isEditable = false)
         {
             var options = new OpenOptions();
             return Document.Open(stream, isEditable, options);
@@ -44,6 +53,20 @@ namespace Kumo
             return new Document(d);
         }
 
+        /// <summary>Creates an editable clone of the document.</summary>
+        public Document Clone()
+        {
+            var clone = _document.Clone() as WordprocessingDocument;
+            return new Document(clone);
+        }
+
+        /** <summary>
+                Saves the document to the underlying stream or path
+                that was used to open it.
+                Some platforms do not support saving due to limitations
+                in <c>System.IO.Packaging.Package</c>.
+            </summary>
+        */
         public void Save()
         {
             _document.Save();
@@ -52,26 +75,6 @@ namespace Kumo
         public void SaveAs(string path)
         {
             _document.SaveAs(path);
-        }
-
-        public IEnumerable<Annotation> Annotations()
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<Range> Words()
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<Range> Paragraphs()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Range Range(int offset, int length)
-        {
-            throw new NotImplementedException();
         }
 
         public string Text()
@@ -99,14 +102,25 @@ namespace Kumo
             _document.Dispose();
         }
 
-        private Document(WordprocessingDocument document)
+        public IEnumerable<Annotation> Annotations()
         {
-            _document = document;
-            _annotations = new Annotations(_document.MainDocumentPart);
+            throw new NotImplementedException();
         }
 
-        private WordprocessingDocument _document;
-        private Annotations _annotations;
+        public Range Range(int offset, int length)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<Range> Words()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<Range> Paragraphs()
+        {
+            throw new NotImplementedException();
+        }
     }
 
 
