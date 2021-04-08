@@ -5,17 +5,42 @@ using DocumentFormat.OpenXml.Packaging;
 
 namespace Kumo
 {
+    /// <summary>Represents a Word document.</summary>
     public class Document : IDisposable, IRange
     {
-        public static Document Open(string path, bool isEditable)
+        public static Document Open(
+            string path,
+            bool isEditable)
         {
-            var d = WordprocessingDocument.Open(path, isEditable);
+            var options = new OpenOptions();
+            return Document.Open(path, isEditable, options);
+        }
+
+        public static Document Open(
+            Stream stream,
+            bool isEditable)
+        {
+            var options = new OpenOptions();
+            return Document.Open(stream, isEditable, options);
+        }
+
+        public static Document Open(
+            string path,
+            bool isEditable,
+            OpenOptions options)
+        {
+            var settings = options.ToOpenSettings();
+            var d = WordprocessingDocument.Open(path, isEditable, settings);
             return new Document(d);
         }
 
-        public static Document Open(Stream stream, bool isEditable)
+        public static Document Open(
+            Stream stream,
+            bool isEditable,
+            OpenOptions options)
         {
-            var d = WordprocessingDocument.Open(stream, isEditable);
+            var settings = options.ToOpenSettings();
+            var d = WordprocessingDocument.Open(stream, isEditable, settings);
             return new Document(d);
         }
 
@@ -82,5 +107,25 @@ namespace Kumo
 
         private WordprocessingDocument _document;
         private Annotations _annotations;
+    }
+
+
+    /// <summary>Options for opening the document.</summary>
+    public class OpenOptions
+    {
+        public bool AutoSave { get; set; }
+        public long MaxCharactersInPart { get; set; }
+    }
+
+    static class Extensions
+    {
+        public static OpenSettings ToOpenSettings(this OpenOptions options)
+        {
+            var settings = new OpenSettings();
+            settings.AutoSave = options.AutoSave;
+            settings.MaxCharactersInPart = options.MaxCharactersInPart;
+
+            return settings;
+        }
     }
 }

@@ -1,0 +1,7 @@
+namespace Kumo
+{
+    class CustomXml
+    {
+        
+    }
+}
