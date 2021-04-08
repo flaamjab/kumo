@@ -1,32 +1,29 @@
-using System;
+using System.IO;
 using System.Linq;
 using Xunit;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
-using DocumentFormat.OpenXml;
 
 namespace Kumo.Tests
 {
     public class OpenXmlTests
     {
-        [Theory]
-        [InlineData("../../../../data/small.docx")]
-        public void OpenReadonly(string path)
+        [Fact]
+        public void AddCustomXmlPart_Readonly_Throws()
         {
+            var path = Documents.All().First();
             using (var d = WordprocessingDocument.Open(path, false))
             {
-                var ds = d.MainDocumentPart.Document.Descendants<Text>();
-                foreach (var t in ds)
-                {
-                    Console.WriteLine(t.Text);
-                }
+                Assert.Throws<IOException>(() => {
+                    d.MainDocumentPart.AddCustomXmlPart("text/txt", "id");
+                });
             }
         }
 
-        [Theory]
-        [InlineData("../../../../data/small.docx")]
-        public void RootIsDocument(string path)
+        [Fact]
+        public void Parent_GoingUp_RootIsDocument()
         {
+            var path = Documents.All().First();
             using (var d = WordprocessingDocument.Open(path, false))
             {
                 var ts = d.MainDocumentPart.Document.Descendants<Text>();
@@ -35,13 +32,26 @@ namespace Kumo.Tests
                 var p = t.Parent;
                 while (p != null)
                 {
-                    Console.WriteLine(p.LocalName);
                     if (p.Parent == null)
                     {
                         Assert.IsNotType<Document>(p);
                     }
                     p = p.Parent;
                 }
+            }
+        }
+
+        [Fact]
+        public void Parts_Get_PartsIncludesOneMainDocumentPart()
+        {
+            var path = Documents.All().First();
+            using (var d = WordprocessingDocument.Open(path, false))
+            {
+                var mainDocumentParts = d.Parts.Where(idPart =>
+                    idPart.OpenXmlPart == d.MainDocumentPart
+                );
+
+                Assert.Single(mainDocumentParts);
             }
         }
     }
