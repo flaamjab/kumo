@@ -6,6 +6,7 @@ using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Kumo.Tests
 {
+    [Collection("UseIO")]
     public class OpenXmlTests
     {
         [Fact]
@@ -52,6 +53,19 @@ namespace Kumo.Tests
                 );
 
                 Assert.Single(mainDocumentParts);
+            }
+        }
+
+        [Fact]
+        public void InnerText_OnDocument_ReturnsAllTextWithinDocument()
+        {
+            var path = Documents.WithName("small");
+            using (var d = WordprocessingDocument.Open(path, false))
+            {
+                var text = d.MainDocumentPart.Document.InnerText;
+
+                Assert.StartsWith("Lorem ipsum dolor sit amet", text);
+                Assert.EndsWith("tristique.", text);
             }
         }
     }
