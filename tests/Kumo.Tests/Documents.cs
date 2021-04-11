@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
-using DocumentFormat.OpenXml.Packaging;
 
 namespace Kumo.Tests
 {
@@ -12,6 +10,11 @@ namespace Kumo.Tests
         public static IEnumerable<string> All()
         {
             return Directory.EnumerateFiles(DIRECTORY);
+        }
+
+        public static string WithName(string name)
+        {
+            return Path.Join(DIRECTORY, name + ".docx");
         }
 
         public static Document OpenInMemory(string path)
