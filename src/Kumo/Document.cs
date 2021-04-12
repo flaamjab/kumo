@@ -63,7 +63,9 @@ namespace Kumo
         /** <summary>
                 Saves the document to the underlying stream or path
                 that was used to open it.
-                Some platforms do not support saving due to limitations
+                <br/>
+                Some platforms do not support saving the document
+                to the same location it was opened from due to limitations
                 in <c>System.IO.Packaging.Package</c>.
             </summary>
         */
@@ -107,14 +109,20 @@ namespace Kumo
             throw new NotImplementedException();
         }
 
-        public Range Range(int offset, int length)
+        /** <summary>
+                Creates a new reference to a text range
+                within the document that spans characters
+                from <c>start</c> to <c>end</c>, excluding
+                the character at <c>end</c>.
+            </summary>
+        */
+        public Range Range(int start, int end)
         {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<Range> Words()
-        {
-            throw new NotImplementedException();
+            return new Range(
+                start, end,
+                _document.MainDocumentPart.Document,
+                _annotations
+            );
         }
 
         public IEnumerable<Range> Paragraphs()
@@ -131,7 +139,7 @@ namespace Kumo
         public long MaxCharactersInPart { get; set; }
     }
 
-    static class Extensions
+    static partial class Extensions
     {
         public static OpenSettings ToOpenSettings(this OpenOptions options)
         {
