@@ -1,27 +1,33 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using Word = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Kumo
 {
-    public class Range : IRange
+    class Range : IRange, IEquatable<Range>
     {
         private int _start;
         private int _end;
-        private Annotations _annotations;
+        private AnnotationStore _annotationStore;
         private Word.Document _content;
-        private Span _span = null;
+        private Span? _span = null;
 
-        internal Range(
+        public IAnnotation? Annotation { get; } = null;
+
+        public Range(
             int start, int end,
             Word.Document content,
-            Annotations annotations)
+            AnnotationStore annotationStore,
+            Annotation? annotation = null)
         {
             _start = start;
             _end = end;
             _content = content;
-            _annotations = annotations;
+            _annotationStore = annotationStore;
+            Annotation = annotation;
         }
 
         public string Text()
@@ -35,17 +41,7 @@ namespace Kumo
             );
         }
 
-        public IEnumerable<Range> Paragraphs()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Annotate(Annotation annotation)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Annotate(IEnumerable<Annotation> annotations)
+        public IEnumerable<IRange> Paragraphs()
         {
             throw new NotImplementedException();
         }
@@ -55,28 +51,67 @@ namespace Kumo
             throw new NotImplementedException();
         }
 
-        /** <summary>
-                <para>Checks whether this <c>Range</c> is valid.</para>
-                
-                <para>A range is considered valid if it spans a sequence
-                of neighboring runs. Runs are considered neighbors if they
-                are within the same paragraph or directly neighboring paragraphs
-                and there are no other runs between them.</para>
+        public IAnnotation Annotate(Property property)
+        {
+            throw new NotImplementedException();
+        }
 
-                <para>For example, the following ranges are not valid:</para>
-                <list>
-                    <item>
-                        - A range that starts within a main body paragraph
-                        but ends inside a table paragraph.
-                    </item>
-                    <item>
-                        - A range that spans multiple table cells.
-                    </item>
-                </list>
+        public IAnnotation Annotate(IEnumerable<Property> properties)
+        {
+            throw new NotImplementedException();
+        }
 
-                <para>Only valid ranges can be annotated.</para>
-            </summary>
-        */
+        public void Reannotate(object obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return Equals(obj as Annotation);
+        }
+
+        public bool Equals(Range? other)
+        {
+            if (other is null)
+            {
+                return false;
+            }
+
+            if (Object.ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            if (GetType() != other.GetType())
+            {
+                return false;
+            }
+
+            return (_start, _end) == (other._start, other._end);
+        }
+
+        public override int GetHashCode() => (_start, _end).GetHashCode();
+
+        public static bool operator==(Range lhs, Range rhs)
+        {
+            if (lhs is null)
+            {
+                if (rhs is null)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
+            return lhs.Equals(rhs);
+        }
+
+        public static bool operator!=(
+            Range lhs, Range rhs
+        ) => !(lhs == rhs);
+
         public bool IsValid()
         {
             throw new NotImplementedException();

@@ -1,7 +1,16 @@
+using System;
+
 namespace Kumo
 {
-    public class Annotation
+    class Annotation : IAnnotation
     {
-        
+        public IRange Range { get; private set; }
+
+        public Property[] Properties { get; }
+
+        public Annotation(Range range, Property[] properties)
+        {
+            Range = range;
+        }        
     }
 }

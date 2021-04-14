@@ -5,16 +5,18 @@ using DocumentFormat.OpenXml.Packaging;
 
 namespace Kumo
 {
-    /// <summary>Represents a Word document.</summary>
-    public class Document : IDisposable, IRange
+    /// <summary>Represents an MS Word document.</summary>
+    public class Document : IDisposable
     {
         private WordprocessingDocument _document;
-        private Annotations _annotations;
+        private AnnotationStore _annotationStore;
 
         private Document(WordprocessingDocument document)
         {
             _document = document;
-            _annotations = new Annotations(_document.MainDocumentPart);
+            _annotationStore = new AnnotationStore(
+                _document.MainDocumentPart
+            );
         }
 
         public static Document Open(
@@ -60,15 +62,14 @@ namespace Kumo
             return new Document(clone);
         }
 
-        /** <summary>
-                Saves the document to the underlying stream or path
-                that was used to open it.
-                <br/>
-                Some platforms do not support saving the document
-                to the same location it was opened from due to limitations
-                in <c>System.IO.Packaging.Package</c>.
-            </summary>
-        */
+        /// <summary>
+        ///   Saves the document to the underlying stream or path
+        ///   that was used to open it.
+        ///   <br/>
+        ///   Some platforms do not support saving the document
+        ///   to the same location it was opened from due to limitations
+        ///   in <c>System.IO.Packaging.Package</c>.
+        /// </summary>
         public void Save()
         {
             _document.Save();
@@ -79,58 +80,54 @@ namespace Kumo
             _document.SaveAs(path);
         }
 
+        /// <summary>The text content of the document.</summary>
         public string Text()
         {
-            throw new NotImplementedException();
+            return _document.MainDocumentPart.Document.InnerText;
         }
 
-        public void Annotate(Annotation annotation)
+        /// <summary>Fetches all the paragraphs contained within the document.</summary>
+        public IEnumerable<IRange> Paragraphs()
         {
             throw new NotImplementedException();
         }
 
-        public void Annotate(IEnumerable<Annotation> annotations)
-        {
-            throw new NotImplementedException();
-        }
-
+        /// <summary>Annotate the document text using the <c>annotator</c>.</summary>
         public void Annotate(IAnnotator annotator)
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        ///   Flushes and saves the content,
+        ///   closes the document, and releases all resources.
+        /// </summary>
         public void Dispose()
         {
             _document.Dispose();
         }
 
-        public IEnumerable<Annotation> Annotations()
+        /// <summary>Fetches all the annotations contained within the document.</summary>
+        public IEnumerable<IAnnotation> Annotations()
         {
             throw new NotImplementedException();
         }
 
-        /** <summary>
-                Creates a new reference to a text range
-                within the document that spans characters
-                from <c>start</c> to <c>end</c>, excluding
-                the character at <c>end</c>.
-            </summary>
-        */
-        public Range Range(int start, int end)
+        /// <summary>
+        ///   Creates a new reference to a text range
+        ///   within the document that spans characters
+        ///   from <c>start</c> to <c>end</c>, excluding
+        ///   the character at <c>end</c>.
+        /// </summary>
+        public IRange Range(int start, int end)
         {
             return new Range(
                 start, end,
                 _document.MainDocumentPart.Document,
-                _annotations
+                _annotationStore
             );
         }
-
-        public IEnumerable<Range> Paragraphs()
-        {
-            throw new NotImplementedException();
-        }
     }
-
 
     /// <summary>Options for opening the document.</summary>
     public class OpenOptions
@@ -139,7 +136,7 @@ namespace Kumo
         public long MaxCharactersInPart { get; set; }
     }
 
-    static partial class Extensions
+    static class Extensions
     {
         public static OpenSettings ToOpenSettings(this OpenOptions options)
         {
