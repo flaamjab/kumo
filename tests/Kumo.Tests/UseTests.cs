@@ -1,9 +1,10 @@
+using System;
 using System.Linq;
 using Xunit;
 
 namespace Kumo.Tests
 {
-    [Collection("UseIO")]
+    [Collection("IO")]
     public class UseTests
     {
         [Fact]
@@ -13,12 +14,15 @@ namespace Kumo.Tests
             {
                 using (var d = Documents.OpenInMemory(path))
                 {
-                    var w = d.Words().First();
-                    var a = new Annotation();
+                    var p = d.Paragraphs().First();
 
-                    w.Annotate(a);
+                    var rel = new Uri("http://example.org/rel");
+                    var val = new Uri("http://example.org/val");
+                    var a = p.Annotate(
+                        new Property(rel, val)
+                    );
 
-                    d.Annotations().Contains(a);
+                    Assert.Single(d.Annotations(), a);
                 }
             }
         }

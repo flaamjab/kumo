@@ -5,7 +5,7 @@ namespace Kumo.Tests
 {
     static class Documents
     {
-        const string DIRECTORY = "../../../../data/";
+        const string DIRECTORY = "../../../../Data/";
 
         public static IEnumerable<string> All()
         {
