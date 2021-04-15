@@ -3,7 +3,7 @@ using Word = DocumentFormat.OpenXml.Wordprocessing;
 namespace Kumo
 {
     record Bookmark(
-        int id,
+        string id,
         Word.BookmarkStart start,
         Word.BookmarkEnd end
     );

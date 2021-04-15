@@ -1,15 +1,14 @@
 ﻿#nullable enable
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace Kumo
 {
     class Range : IRange, IEquatable<Range>
     {
-        private Body _parent;
-
-        public IAnnotation? Annotation { get; private set; } = null;
+        private Body _holder;
 
         public int Start { get; }
 
@@ -17,14 +16,23 @@ namespace Kumo
 
         public Range(Body body, int start, int end)
         {
-            _parent = body;
+            _holder = body;
             Start = start;
             End = end;
         }
 
         public string Text()
         {
-            return _parent.Text(this);
+            var block = _holder.Block(this);
+            var textValues = block.Nodes.Select(n => n.Text);
+            var text = String.Join("", textValues);
+
+            var (leftOffset, rightOffset) = block.Offsets(this);
+
+            return text.Substring(
+                leftOffset,
+                text.Length - leftOffset - rightOffset
+            );
         }
 
         public IEnumerable<IRange> Paragraphs()
@@ -39,7 +47,11 @@ namespace Kumo
 
         public IAnnotation Annotate(Property property)
         {
-            throw new NotImplementedException();
+            return _holder.Annotate(
+                this,
+                new Property[] { property },
+                new Range[0]
+            );
         }
 
         public IAnnotation Annotate(IEnumerable<Property> properties)
@@ -57,7 +69,7 @@ namespace Kumo
             throw new NotImplementedException();
         }
 
-        public bool IsValid()
+        public bool Valid()
         {
             throw new NotImplementedException();
         }

@@ -52,5 +52,30 @@ namespace Kumo.Tests
                 Assert.Equal(expectedText, actualText);
             }
         }
+
+        [Theory]
+        [InlineData(0, 4)]
+        [InlineData(1, 5)]
+        [InlineData(9, 15)]
+        [InlineData(1, 11)]
+        [InlineData(0, 11)]
+        public void Annotate_SingleAnnotation_DocumentHasNewAnnotation(
+            int start, int end)
+        {
+            var path = Documents.WithName("small");
+            using (var d = Documents.OpenInMemory(path))
+            {
+                var r = d.Range(start, end);
+
+                var a = r.Annotate(
+                    new Property(
+                        "http://example.org/rel",
+                        "http://example.org/val"
+                    )
+                );
+
+                Assert.Single(d.Annotations(), a);
+            }
+        }
     }
 }

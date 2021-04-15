@@ -10,9 +10,6 @@ namespace Kumo
     /// </summary>
     public interface IRange
     {
-        /// <summary>The annotation for this <c>IRange</c>.</summary>
-        public IAnnotation? Annotation { get; }
-
         /// <summary>
         ///   <para>Retrieves raw text within this <c>Range</c>.</para>
         ///   <para>
@@ -75,6 +72,6 @@ namespace Kumo
         ///   </list>
         ///   <para>Only valid ranges can be annotated.</para>
         /// </summary>
-        public bool IsValid();
+        public bool Valid();
     }
 }

@@ -1,3 +1,5 @@
+using System;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using Xunit;
 
 namespace Kumo.Tests
@@ -11,6 +13,20 @@ namespace Kumo.Tests
             var tupleB = (1, 2);
 
             Assert.Equal(tupleA.GetHashCode(), tupleB.GetHashCode());
+        }
+
+        [Fact]
+        public void Uri_OddString_Throws()
+        {
+            Assert.Throws<UriFormatException>(() => {
+                new Uri("Odd");
+            });
+        }
+
+        [Fact]
+        public void Uri_OddProtocol_Ok()
+        {
+            new Uri("odd://example.com");
         }
     }
 }

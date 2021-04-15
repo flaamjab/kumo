@@ -20,6 +20,10 @@ namespace Kumo
             );
         }
 
+        /// <summary>
+        ///   Creates a new instance of the <c>Document</c>
+        ///   class from the specified file.
+        /// </summary>
         public static Document Open(
             string path,
             bool isEditable = false)
@@ -28,14 +32,10 @@ namespace Kumo
             return Document.Open(path, isEditable, options);
         }
 
-        public static Document Open(
-            Stream stream,
-            bool isEditable = false)
-        {
-            var options = new OpenOptions();
-            return Document.Open(stream, isEditable, options);
-        }
-
+        /// <summary>
+        ///   Creates a new instance of the <c>Document</c>
+        ///   class from the specified file.
+        /// </summary>
         public static Document Open(
             string path,
             bool isEditable,
@@ -46,6 +46,22 @@ namespace Kumo
             return new Document(d);
         }
 
+        /// <summary>
+        ///   Creates a new instance of the <c>Document</c> class 
+        ///   from IO stream.
+        /// </summary>
+        public static Document Open(
+            Stream stream,
+            bool isEditable = false)
+        {
+            var options = new OpenOptions();
+            return Document.Open(stream, isEditable, options);
+        }
+
+        /// <summary>
+        ///   Creates a new instance of the <c>Document</c> class 
+        ///   from IO stream.
+        /// </summary>
         public static Document Open(
             Stream stream,
             bool isEditable,
@@ -74,11 +90,6 @@ namespace Kumo
         public void Save()
         {
             _package.Save();
-        }
-
-        public void SaveAs(string path)
-        {
-            _package.SaveAs(path);
         }
 
         /// <summary>The text content of the document.</summary>
@@ -122,7 +133,7 @@ namespace Kumo
         /// </summary>
         public IRange Range(int start, int end)
         {
-            return new Range(_body, start, end);
+            return _body.Range(start, end);
         }
     }
 
@@ -133,7 +144,7 @@ namespace Kumo
         public long MaxCharactersInPart { get; set; }
     }
 
-    static class Extensions
+    static partial class Extensions
     {
         public static OpenSettings ToOpenSettings(this OpenOptions options)
         {
