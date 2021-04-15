@@ -1,4 +1,0 @@
-https://github.com/dotnet/runtime/issues/3217
-
-https://docs.microsoft.com/en-us/archive/blogs/gray_knowlton/what-is-custom-xml-and-the-impact-of-the-i4i-judgment-on-word
-    export DOTNET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER=0
