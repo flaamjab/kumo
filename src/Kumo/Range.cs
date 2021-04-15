@@ -27,7 +27,7 @@ namespace Kumo
             var textValues = block.Nodes.Select(n => n.Text);
             var text = String.Join("", textValues);
 
-            var (leftOffset, rightOffset) = block.Offsets(this);
+            var (leftOffset, rightOffset) = Offsets(block);
 
             return text.Substring(
                 leftOffset,
@@ -74,6 +74,25 @@ namespace Kumo
             throw new NotImplementedException();
         }
 
+        public static bool operator ==(Range lhs, Range rhs)
+        {
+            if (lhs is null)
+            {
+                if (rhs is null)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
+            return lhs.Equals(rhs);
+        }
+
+        public static bool operator !=(
+            Range lhs, Range rhs
+        ) => !(lhs == rhs);
+
         public override bool Equals(object? obj)
         {
             return Equals(obj as Range);
@@ -101,23 +120,20 @@ namespace Kumo
 
         public override int GetHashCode() => (Start, End).GetHashCode();
 
-        public static bool operator ==(Range lhs, Range rhs)
+        public (int, int) Offsets(NodeBlock block)
         {
-            if (lhs is null)
+            if (Start < block.Start || block.End < End
+                || block.End < Start)
             {
-                if (rhs is null)
-                {
-                    return true;
-                }
-
-                return false;
+                throw new ArgumentOutOfRangeException(
+                    "The Range must be contained within the block"
+                );
             }
 
-            return lhs.Equals(rhs);
-        }
+            int leftOffset = Start - block.Start;
+            int rightOffset = block.End - End;
 
-        public static bool operator !=(
-            Range lhs, Range rhs
-        ) => !(lhs == rhs);
+            return (leftOffset, rightOffset);
+        }
     }
 }

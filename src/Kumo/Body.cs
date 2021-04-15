@@ -115,7 +115,7 @@ namespace Kumo
             string bookmarkId = "0";
 
             var b = Block(range);
-            var (leftOffset, rightOffset) = b.Offsets(range);
+            var (leftOffset, rightOffset) = range.Offsets(b);
 
             var bookmarkStart = new W.BookmarkStart();
             bookmarkStart.Id = bookmarkId;
