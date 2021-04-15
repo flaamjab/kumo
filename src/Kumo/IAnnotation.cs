@@ -5,5 +5,7 @@ namespace Kumo
         public IRange Range { get; }
 
         public Property[] Properties { get; }
+
+        public IRange[] References { get; }
     }
 }

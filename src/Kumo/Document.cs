@@ -8,14 +8,15 @@ namespace Kumo
     /// <summary>Represents an MS Word document.</summary>
     public class Document : IDisposable
     {
-        private WordprocessingDocument _document;
-        private AnnotationStore _annotationStore;
+        private WordprocessingDocument _package;
+        private Body _body;
 
         private Document(WordprocessingDocument document)
         {
-            _document = document;
-            _annotationStore = new AnnotationStore(
-                _document.MainDocumentPart
+            _package = document;
+            _body = new Body(
+                _package.MainDocumentPart.Document,
+                new RdfStore(_package.MainDocumentPart)
             );
         }
 
@@ -58,7 +59,7 @@ namespace Kumo
         /// <summary>Creates an editable clone of the document.</summary>
         public Document Clone()
         {
-            var clone = _document.Clone() as WordprocessingDocument;
+            var clone = _package.Clone() as WordprocessingDocument;
             return new Document(clone);
         }
 
@@ -72,18 +73,18 @@ namespace Kumo
         /// </summary>
         public void Save()
         {
-            _document.Save();
+            _package.Save();
         }
 
         public void SaveAs(string path)
         {
-            _document.SaveAs(path);
+            _package.SaveAs(path);
         }
 
         /// <summary>The text content of the document.</summary>
         public string Text()
         {
-            return _document.MainDocumentPart.Document.InnerText;
+            return _package.MainDocumentPart.Document.InnerText;
         }
 
         /// <summary>Fetches all the paragraphs contained within the document.</summary>
@@ -104,7 +105,7 @@ namespace Kumo
         /// </summary>
         public void Dispose()
         {
-            _document.Dispose();
+            _package.Dispose();
         }
 
         /// <summary>Fetches all the annotations contained within the document.</summary>
@@ -121,11 +122,7 @@ namespace Kumo
         /// </summary>
         public IRange Range(int start, int end)
         {
-            return new Range(
-                start, end,
-                _document.MainDocumentPart.Document,
-                _annotationStore
-            );
+            return new Range(_body, start, end);
         }
     }
 

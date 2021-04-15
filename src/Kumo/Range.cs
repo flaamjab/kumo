@@ -1,44 +1,30 @@
 ﻿#nullable enable
 
 using System;
-using System.Linq;
 using System.Collections.Generic;
-using Word = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Kumo
 {
     class Range : IRange, IEquatable<Range>
     {
-        private int _start;
-        private int _end;
-        private AnnotationStore _annotationStore;
-        private Word.Document _content;
-        private Span? _span = null;
+        private Body _parent;
 
-        public IAnnotation? Annotation { get; } = null;
+        public IAnnotation? Annotation { get; private set; } = null;
 
-        public Range(
-            int start, int end,
-            Word.Document content,
-            AnnotationStore annotationStore,
-            Annotation? annotation = null)
+        public int Start { get; }
+
+        public int End { get; }
+
+        public Range(Body body, int start, int end)
         {
-            _start = start;
-            _end = end;
-            _content = content;
-            _annotationStore = annotationStore;
-            Annotation = annotation;
+            _parent = body;
+            Start = start;
+            End = end;
         }
 
         public string Text()
         {
-            var s = Span();
-            var text = string.Join("", s.Nodes.Select(n => n.Text));
-
-            return text.Substring(
-                s.LeftOffset,
-                text.Length - s.LeftOffset - s.RightOffset
-            );
+            return _parent.Text(this);
         }
 
         public IEnumerable<IRange> Paragraphs()
@@ -61,14 +47,24 @@ namespace Kumo
             throw new NotImplementedException();
         }
 
-        public void Reannotate(object obj)
+        public void Reannotate(Property property)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Reannotate(Property[] properties)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsValid()
         {
             throw new NotImplementedException();
         }
 
         public override bool Equals(object? obj)
         {
-            return Equals(obj as Annotation);
+            return Equals(obj as Range);
         }
 
         public bool Equals(Range? other)
@@ -88,12 +84,12 @@ namespace Kumo
                 return false;
             }
 
-            return (_start, _end) == (other._start, other._end);
+            return (Start, End) == (other.Start, other.End);
         }
 
-        public override int GetHashCode() => (_start, _end).GetHashCode();
+        public override int GetHashCode() => (Start, End).GetHashCode();
 
-        public static bool operator==(Range lhs, Range rhs)
+        public static bool operator ==(Range lhs, Range rhs)
         {
             if (lhs is null)
             {
@@ -108,60 +104,8 @@ namespace Kumo
             return lhs.Equals(rhs);
         }
 
-        public static bool operator!=(
+        public static bool operator !=(
             Range lhs, Range rhs
         ) => !(lhs == rhs);
-
-        public bool IsValid()
-        {
-            throw new NotImplementedException();
-        }
-
-        private Span Span()
-        {
-            if (_span != null)
-            {
-                return _span;
-            }
-
-            var nodes = new LinkedList<Word.Text>();
-            int offset = 0;
-            int leftOffset = 0;
-            int rightOffset = 0;
-            var allTextNodes = _content.Descendants<Word.Text>();
-
-            foreach (var t in allTextNodes)
-            {
-                int tStart = offset;
-                int tEnd = offset + t.Text.Length;
-
-                bool tFirstInRange = _start >= tStart && _start <= tEnd;
-                bool tAfterFirstInRange = _start <= tStart;
-                if (tFirstInRange || tAfterFirstInRange)
-                {
-                    if (tFirstInRange)
-                    {
-                        leftOffset = _start - tStart;
-                    }
-
-                    nodes.AddLast(t);
-
-                    bool tLastInRange = _end <= tEnd;
-                    if (tLastInRange)
-                    {
-                        rightOffset = tEnd - _end;
-                        break;
-                    }
-                }
-
-                offset = tEnd;
-            }
-
-            return new Span(
-                nodes.ToArray(),
-                leftOffset,
-                rightOffset
-            );
-        }
     }
 }
