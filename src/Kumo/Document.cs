@@ -122,7 +122,7 @@ namespace Kumo
         /// <summary>Fetches all the annotations contained within the document.</summary>
         public IEnumerable<IAnnotation> Annotations()
         {
-            throw new NotImplementedException();
+            return _body.Annotations();
         }
 
         /// <summary>

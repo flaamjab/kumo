@@ -69,6 +69,11 @@ namespace Kumo
             throw new NotImplementedException();
         }
 
+        public IAnnotation? Annotation()
+        {
+            return _holder.Annotation(this);
+        }
+
         public bool Valid()
         {
             throw new NotImplementedException();
@@ -120,7 +125,7 @@ namespace Kumo
 
         public override int GetHashCode() => (Start, End).GetHashCode();
 
-        public (int, int) Offsets(NodeBlock block)
+        public (int, int) Offsets(Block block)
         {
             if (Start < block.Start || block.End < End
                 || block.End < Start)

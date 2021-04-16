@@ -1,27 +1,28 @@
-using System;
+using System.Linq;
 
 namespace Kumo
 {
     class Annotation : IAnnotation
     {
-        public string ID { get; }
+        private Bookmark _subject;
+        private Bookmark[] _crossrefs;
 
-        public IRange Range { get; private set; }
+        public IRange Subject { get => _subject.Range; }
 
         public Property[] Properties { get; }
 
-        public IRange[] References { get; }
+        public IRange[] Crossrefs {
+            get => _crossrefs.Select(b => b.Range).ToArray();
+        }
 
         public Annotation(
-            string id,
-            Range range,
+            Bookmark subject,
             Property[] properties,
-            IRange[] references)
+            Bookmark[] crossrefs)
         {
-            ID = id;
-            Range = range;
+            _subject = subject;
             Properties = properties;
-            References = references;
-        }        
+            _crossrefs = crossrefs;
+        }
     }
 }

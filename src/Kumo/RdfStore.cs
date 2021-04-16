@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using DocumentFormat.OpenXml.Packaging;
 using VDS.RDF;
 
@@ -8,19 +7,25 @@ namespace Kumo
     class RdfStore
     {
         private MainDocumentPart _mainPart;
-        private IGraph _annotationGraph;
+        private CustomXmlPart _textAnnotContainer;
+        private IGraph _annotGraph;
 
         public RdfStore(MainDocumentPart mainPart)
         {
             _mainPart = mainPart;
         }
 
-        public void Assert(Annotation annotation)
+        public void Assert(Triple[] triples)
         {
             throw new NotImplementedException();
         }
 
-        public void Retract(Annotation annotation)
+        public void Retract(string id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Triple[] Get(string id)
         {
             throw new NotImplementedException();
         }

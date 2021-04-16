@@ -22,8 +22,8 @@ namespace Kumo
         public string Text();
 
         /// <summary>
-        ///   Retrieves a separate <c>Range</c> for
-        ///   each paragraph this <c>Range</c> spans.
+        ///   Retrieves a separate <c>IRange</c> for
+        ///   each paragraph this <c>IRange</c> spans.
         /// </summary>
         public IEnumerable<IRange> Paragraphs();
 
@@ -51,6 +51,9 @@ namespace Kumo
         /// </summary>
         /// <param name="properties">The properties to annotate this range with</param>
         public void Reannotate(Property[] properties);
+
+        /// <summary>Fetches the annotation for this <c>IRange</c> if present.</summary>
+        public IAnnotation? Annotation();
 
         /// <summary>
         ///   <para>Checks whether this <c>IRange</c> is valid.</para>
