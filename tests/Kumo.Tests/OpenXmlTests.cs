@@ -124,5 +124,12 @@ namespace Kumo.Tests
                 () => node.InsertAfterSelf(new Run())
             );
         }
+
+        [Fact]
+        public void Is_RunABookmarkStart_False()
+        {
+            var run = new Run() as OpenXmlElement;
+            Assert.True(run is not BookmarkStart);
+        }
     }
 }
