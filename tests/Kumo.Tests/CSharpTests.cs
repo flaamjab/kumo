@@ -1,5 +1,4 @@
 using System;
-using DocumentFormat.OpenXml.Drawing.Charts;
 using Xunit;
 
 namespace Kumo.Tests
