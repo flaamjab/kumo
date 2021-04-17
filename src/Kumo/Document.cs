@@ -80,12 +80,11 @@ namespace Kumo
         }
 
         /// <summary>
-        ///   Saves the document to the underlying stream or path
-        ///   that was used to open it.
-        ///   <br/>
-        ///   Some platforms do not support saving the document
+        ///   <para>Saves the document to the underlying stream or path
+        ///   that was used to open it.</para>
+        ///   <para> platforms do not support saving the document
         ///   to the same location it was opened from due to limitations
-        ///   in <c>System.IO.Packaging.Package</c>.
+        ///   in <c>System.IO.Packaging.Package</c>.</para>
         /// </summary>
         public void Save()
         {
@@ -134,7 +133,7 @@ namespace Kumo
     /// <summary>Options for opening the document.</summary>
     public class OpenOptions
     {
-        public bool AutoSave { get; set; }
+        public bool AutoSave { get; set; } = true;
         public long MaxCharactersInPart { get; set; }
     }
 

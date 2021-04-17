@@ -1,5 +1,6 @@
 #nullable enable
 
+using System.Diagnostics;
 using System;
 using System.Linq;
 using System.IO;
@@ -29,9 +30,24 @@ namespace Kumo
             _parser = new RdfXmlParser();
         }
 
-        public void Assert(Description star)
+        public void Assert(Description description)
         {
-            throw new NotImplementedException();
+            var g = Graph();
+            var triples = description.ToTriples(g);
+            
+            Debug.Assert(triples.Length > 0);
+            g.Assert(triples);
+
+            var c = Container(TEXT_ANNOTATION_PART_ID);
+            
+            using (var ms = new MemoryStream())
+            {
+                var w = new StreamWriter(ms);
+                _writer.Save(g, w, true);
+
+                ms.Position = 0;
+                c.FeedData(ms);
+            }
         }
 
         public void Retract(string id)
@@ -39,7 +55,7 @@ namespace Kumo
             throw new NotImplementedException();
         }
 
-        public Description? Get(int id)
+        public Description Get(int id)
         {
             var g = Graph();
             var subject = g.GetBlankNode(id.ToString());
@@ -47,11 +63,29 @@ namespace Kumo
 
             if (triples.Length > 0)
             {
-                return new Description(id, triples);
+                return Description.FromTriples(id, triples);
             }
             else
             {
-                return null;
+                throw new InvalidOperationException(
+                    $"a description with ID \"{id}\" does not exist"
+                );
+            }
+        }
+
+        public bool Exists(int id)
+        {
+            var g = Graph();
+            var subject = g.GetBlankNode(id.ToString());
+            var triples = g.GetTriplesWithSubject(subject).ToArray();
+
+            if (triples.FirstOrDefault() == null)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
             }
         }
 
@@ -64,12 +98,17 @@ namespace Kumo
 
             _graph = new Graph();
             _graph.NamespaceMap.AddNamespace(
-                "kumo",
+                Schema.Prefix,
                 Schema.Namespace
             );
             var container = Container(TEXT_ANNOTATION_PART_ID);
-            var reader = new StreamReader(container.GetStream());
-            _parser.Load(_graph, reader);
+            using (var reader = new StreamReader(container.GetStream()))
+            {
+                if (!reader.EndOfStream)
+                {
+                    _parser.Load(_graph, reader);
+                }
+            }
 
             return _graph;
         }
@@ -81,7 +120,7 @@ namespace Kumo
                 return _textAnnotationContainer;
             }
 
-            var part = _mainPart.GetPartById(id);
+            _mainPart.TryGetPartById(id, out var part);
             if (part == null)
             {
                 _textAnnotationContainer = _mainPart.AddCustomXmlPart(
@@ -93,8 +132,6 @@ namespace Kumo
             else if (part is CustomXmlPart)
             {
                 _textAnnotationContainer = (CustomXmlPart)part;
-                var stream = new StreamReader(part.GetStream());
-                
                 return _textAnnotationContainer;
             }
             else

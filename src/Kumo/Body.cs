@@ -43,6 +43,11 @@ namespace Kumo
             throw new NotImplementedException();
         }
 
+        public bool Annotated(Range range)
+        {
+            throw new NotImplementedException();
+        }
+
         public IEnumerable<IAnnotation> Annotations()
         {
             // Get all the bookmarks
@@ -58,39 +63,37 @@ namespace Kumo
             Property[] properties,
             Range[] crossrefs)
         {
-            // Fetch the bookmark for this range
-            var subjectBookmark = _bookmarkTable[range];
+            // Prepare the bookmark for this range
+            Bookmark subjectBookmark;
             // If the bookmark exists,
-            if (subjectBookmark != null)
+            if (_bookmarkTable.Bookmarked(range))
             {
                 // assert that there is no annotation for it in the RdfStore.
+                subjectBookmark = _bookmarkTable[range];
                 _rdfStore.Get(subjectBookmark.Id);
             }
             // If the bookmark does not exists,
             else
             {
                 // create a new bookmark for this range,
-                var newB = new Bookmark(0, this, range);
+                subjectBookmark = new Bookmark(0, this, range);
 
                 // apply it and associate it with this range.
-                newB.Apply();
-                _bookmarkTable[range] = newB;
+                _bookmarkTable[range] = subjectBookmark;
             }
 
             var crossrefBs = crossrefs.Select(cr =>
                 {
-                    var b = _bookmarkTable[cr];
-                    if (b != null)
+                    if (_bookmarkTable.Bookmarked(cr))
                     {
-                        return b;
+                        return _bookmarkTable[cr];
                     }
                     else
                     {
-                        var newB = new Bookmark(1, this, range);
-                        newB.Apply();
-                        _bookmarkTable[range] = newB;
+                        var b = new Bookmark(1, this, range);
+                        _bookmarkTable[range] = b;
 
-                        return newB;
+                        return b;
                     }
                 }
             );
@@ -104,7 +107,7 @@ namespace Kumo
 
             // Using the bookmark's ID, ask the RdfStore
             // to store this annotation.
-            _rdfStore.Assert(a.ToStar());
+            _rdfStore.Assert(a.ToDescription());
 
             return a;
         }
@@ -179,8 +182,8 @@ namespace Kumo
                 .Where(p => p.Name == refersTo)
                 .Select(p =>
                     {
-                       int id = int.Parse(p.Value.ToString());
-                       return _bookmarkTable[id];
+                        int id = int.Parse(p.Value.ToString());
+                        return _bookmarkTable[id];
                     }
                 )
                 .ToArray();
@@ -190,6 +193,7 @@ namespace Kumo
                 .ToArray();
 
             var subject = _bookmarkTable[id];
+
             return new Annotation(subject, properties, crossrefs);
         }
     }

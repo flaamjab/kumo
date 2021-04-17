@@ -23,7 +23,7 @@ namespace Kumo
             {
                 var bs = Bookmarks();
                 bs[index] = value;
-                value.Apply();
+                value.Link();
             }
         }
 
@@ -43,12 +43,17 @@ namespace Kumo
             _bookmarks = new Dictionary<Range, Bookmark>();
         }
 
+        public bool Bookmarked(Range range)
+        {
+            return _bookmarks.ContainsKey(range);
+        }
+
         public bool Remove(Range range)
         {
             var b = _bookmarks[range];
             if (b != null)
             {
-                b.Remove();
+                b.Unlink();
                 _bookmarks.Remove(range);
                 return true;
             }

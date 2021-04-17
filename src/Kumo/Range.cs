@@ -64,7 +64,7 @@ namespace Kumo
             throw new NotImplementedException();
         }
 
-        public void Reannotate(Property[] properties)
+        public void Reannotate(IEnumerable<Property> properties)
         {
             throw new NotImplementedException();
         }
@@ -72,6 +72,11 @@ namespace Kumo
         public IAnnotation? Annotation()
         {
             return _holder.Annotation(this);
+        }
+
+        public bool Annotated()
+        {
+            return _holder.Annotated(this);
         }
 
         public bool Valid()

@@ -10,44 +10,65 @@ namespace Kumo
     /// </summary>
     class Description
     {
-        public int Id { get; }
+        public int Subject { get; }
+
         public Property[] Properties { get; }
 
-        public Description(int id, Triple[] triples)
-        {
-            Id = id;
+        public int[] Crossrefs { get; }
 
-            if (!triples.All(t => t.Subject.ToString() == id.ToString()))
+        public static Description FromTriples(int subject, Triple[] triples)
+        {
+            if (!triples.All(t => t.Subject.ToString() == subject.ToString()))
             {
                 throw new ArgumentException(
                     "all triples must have the same subject ID"
                 );
             }
 
-            Properties = triples.Select(t => new Property(
-                ((IUriNode)t.Predicate).Uri,
-                t.Object.ToString()
-            )).ToArray();
+            var properties = triples
+                .Where(t => t.Object.NodeType == NodeType.Uri)
+                .Select(t => new Property(
+                    ((IUriNode)t.Predicate).Uri,
+                    ((IUriNode)t.Object).Uri
+                ))
+                .ToArray();
+
+            var crossrefs = triples
+                .Where(t => t.Subject.NodeType == NodeType.Blank)
+                .Select(t => int.Parse(t.Object.ToString()))
+                .ToArray();
+
+            return new Description(subject, properties, crossrefs);
+        }
+
+        public Description(int subject, Property[] properties, int[] crossrefs)
+        {
+            Subject = subject;
+            Properties = properties;
+            Crossrefs = crossrefs;
         }
 
         public Triple[] ToTriples(INodeFactory f)
         {
-            var subject = f.CreateBlankNode(Id.ToString());
-            var triples = Properties.Select(p =>
+            var subject = f.CreateBlankNode(Subject.ToString());
+
+            var propertyTriples = Properties.Select(p => 
                 {
                     var pred = f.CreateUriNode(p.Name);
-                    if (Uri.IsWellFormedUriString(p.Value, UriKind.Absolute))
-                    {
-                        var obj = f.CreateUriNode(new Uri(p.Value));
-                        return new Triple(subject, pred, obj);
-                    }
-                    else
-                    {
-                        var obj = f.CreateBlankNode(p.Value);
-                        return new Triple(subject, pred, obj);
-                    }
+                    var obj = f.CreateUriNode(p.Value);
+                    return new Triple(subject, pred, obj);
                 }
             );
+
+            var crossrefTriples = Crossrefs.Select(id =>
+                {
+                    var pred = f.CreateUriNode(Schema.Uri(Schema.RefersTo));
+                    var obj = f.CreateBlankNode(id.ToString());
+                    return new Triple(subject, pred, obj);
+                }
+            );
+
+            var triples = propertyTriples.Concat(crossrefTriples);
 
             return triples.ToArray();
         }

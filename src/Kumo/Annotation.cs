@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 
 namespace Kumo
@@ -12,7 +11,8 @@ namespace Kumo
 
         public Property[] Properties { get; }
 
-        public IRange[] Crossrefs {
+        public IRange[] Crossrefs
+        {
             get => _crossrefs.Select(b => b.Range).ToArray();
         }
 
@@ -26,9 +26,13 @@ namespace Kumo
             _crossrefs = crossrefs;
         }
 
-        public Description ToStar()
+        public Description ToDescription()
         {
-            throw new NotImplementedException();
+            return new Description(
+                _subject.Id,
+                Properties,
+                _crossrefs.Select(cr => cr.Id).ToArray()
+            );
         }
     }
 }

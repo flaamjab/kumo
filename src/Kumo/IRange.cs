@@ -27,22 +27,23 @@ namespace Kumo
         /// </summary>
         public IEnumerable<IRange> Paragraphs();
 
-        /// <summary>
-        ///   Annotate this <c>IRange</c> using
-        ///   the provided <c>IAnnotator</c>.
-        /// </summary>
+        /// <summary>Annotates this <c>IRange</c>.</summary>
+        /// <param name="annotator">The annotator to use.</param>
         public void Annotate(IAnnotator annotator);
 
-        /// <summary>Annotate this <c>IRange</c> with <c>property</c>.</summary>
+        /// <summary>Annotate this <c>IRange</c>.</summary>
+        /// <param name="property">The property to annotate with.</param>
         public IAnnotation Annotate(Property property);
 
-        /// <summary>Annotate this <c>IRange</c> with <c>properties</c>.</summary>
+        /// <summary>Annotate this <c>IRange</c>.</summary>
+        /// <param name="properties">The properties to annotate with.</param>
         public IAnnotation Annotate(IEnumerable<Property> properties);
 
         /// <summary>
         ///   Annotate this <c>IRange</c> replacing its
         ///   current annotation if it exists.
         /// </summary>
+        /// <param name="property>">The property to annotate with.</param>
         public void Reannotate(Property property);
 
         /// <summary>
@@ -50,10 +51,16 @@ namespace Kumo
         ///   current annotation if it exists.
         /// </summary>
         /// <param name="properties">The properties to annotate this range with</param>
-        public void Reannotate(Property[] properties);
+        public void Reannotate(IEnumerable<Property> properties);
 
         /// <summary>Fetches the annotation for this <c>IRange</c> if present.</summary>
         public IAnnotation? Annotation();
+
+        /// <summary>
+        ///   Returns the value indicating whether this <c>IRange</c>
+        ///   has an annotation associated with it
+        /// </summary>
+        public bool Annotated();
 
         /// <summary>
         ///   <para>Checks whether this <c>IRange</c> is valid.</para>

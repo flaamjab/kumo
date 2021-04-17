@@ -26,7 +26,7 @@ namespace Kumo
             Range = range;
         }
 
-        public Block Apply()
+        public void Link()
         {
             if (_bookmarkStart != null || _bookmarkEnd != null)
             {
@@ -62,11 +62,9 @@ namespace Kumo
                 var originalEndRun = (W.Run)textEnd.Parent;
                 WrapRight(originalEndRun, rightOffset);
             }
-
-            throw new NotImplementedException();
         }
 
-        public Block Remove()
+        public Block Unlink()
         {
             if (_bookmarkStart == null || _bookmarkEnd == null)
             {
