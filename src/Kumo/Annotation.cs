@@ -5,7 +5,6 @@ namespace Kumo
 {
     class Annotation : IAnnotation
     {
-
         private Bookmark _subject;
         private Bookmark[] _crossrefs;
 
@@ -27,7 +26,7 @@ namespace Kumo
             _crossrefs = crossrefs;
         }
 
-        public Star ToStar()
+        public Description ToStar()
         {
             throw new NotImplementedException();
         }

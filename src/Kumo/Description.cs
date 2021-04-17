@@ -8,12 +8,12 @@ namespace Kumo
     ///   Represents a subject node, with all 
     ///   properties attached to it.
     /// </summary>
-    class Star
+    class Description
     {
         public int Id { get; }
         public Property[] Properties { get; }
 
-        public Star(int id, Triple[] triples)
+        public Description(int id, Triple[] triples)
         {
             Id = id;
 

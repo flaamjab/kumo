@@ -29,7 +29,7 @@ namespace Kumo
             _parser = new RdfXmlParser();
         }
 
-        public void Assert(Star star)
+        public void Assert(Description star)
         {
             throw new NotImplementedException();
         }
@@ -39,7 +39,7 @@ namespace Kumo
             throw new NotImplementedException();
         }
 
-        public Star? Get(int id)
+        public Description? Get(int id)
         {
             var g = Graph();
             var subject = g.GetBlankNode(id.ToString());
@@ -47,7 +47,7 @@ namespace Kumo
 
             if (triples.Length > 0)
             {
-                return new Star(id, triples);
+                return new Description(id, triples);
             }
             else
             {
