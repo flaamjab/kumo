@@ -47,23 +47,65 @@ namespace Kumo
             // Get all the bookmarks
             var bs = Bookmarks();
             // Fetch triples from the store
-            return bs.Select(b => Annotation(b.ID));
+            return (IEnumerable<IAnnotation>)bs.Values
+                .Select(b => Annotation(b.Id))
+                .Where(b => b != null);
         }
 
         public Annotation Annotate(
             Range range,
             Property[] properties,
-            Range[] references)
+            Range[] crossrefs)
         {
             // Fetch the bookmark for this range
-            // If the bookmark exists, assert that there is not
-            // annotation for it in the RdfStore.
-            // If not, create a new bookmark for this range,
-            // apply it, associate it with this range.
+            var subjectBookmark = Bookmark(range);
+            // If the bookmark exists,
+            if (subjectBookmark != null)
+            {
+                // assert that there is no annotation for it in the RdfStore.
+                _rdfStore.Get(subjectBookmark.Id);
+            }
+            // If the bookmark does not exists,
+            else
+            {
+                // create a new bookmark for this range,
+                var newB = new Bookmark(0, this, range);
+
+                // apply it and associate it with this range.
+                newB.Apply();
+                Bookmarks()[range] = newB;
+            }
+
+            var crossrefBs = crossrefs.Select(cr =>
+                {
+                    var b = Bookmark(cr);
+                    if (b != null)
+                    {
+                        return b;
+                    }
+                    else
+                    {
+                        var newB = new Bookmark(1, this, range);
+                        newB.Apply();
+                        Bookmarks()[range] = newB;
+
+                        return newB;
+                    }
+                }
+            );
+
+            // Create the annotation object.
+            var a = new Annotation(
+                subjectBookmark,
+                properties,
+                crossrefBs.ToArray()
+            );
+
             // Using the bookmark's ID, ask the RdfStore
             // to store this annotation.
+            _rdfStore.Assert(a.ToStar());
 
-            throw new NotImplementedException();
+            return a;
         }
 
         public void Deannotate(Range range)
@@ -123,20 +165,48 @@ namespace Kumo
             return new Block(nodes.ToArray(), blockStart, blockEnd);
         }
 
-        private Annotation Annotation(int id)
+        private Annotation? Annotation(int id)
         {
-            var triples = _rdfStore.Get(id.ToString());
-            throw new NotImplementedException();
+            var star = _rdfStore.Get(id);
+            if (star == null)
+            {
+                return null;
+            }
+
+            var refersTo = Schema.Uri(Schema.RefersTo);
+            var crossrefs = star.Properties
+                .Where(p => p.Name == refersTo)
+                .Select(p =>
+                    {
+                       int id = int.Parse(p.Value.ToString());
+                       return Bookmark(id);
+                    }
+                )
+                .ToArray();
+
+            var properties = star.Properties
+                .Where(p => p.Name != refersTo)
+                .ToArray();
+
+            var subject = Bookmark(id);
+            return new Annotation(subject, properties, crossrefs);
         }
 
-        private IEnumerable<Bookmark> Bookmarks()
+        private Dictionary<Range, Bookmark> Bookmarks()
         {
+            if (_bookmarks != null)
+            {
+                return _bookmarks;
+            }
+
             var starts = _content
                 .Descendants<W.BookmarkStart>()
                 .Where(b =>
                     {
                         Console.WriteLine(b.Name.Value);
-                        return b.Name.Value.StartsWith(Bookmark.BASENAME);
+                        return b.Name.Value.StartsWith(
+                            Kumo.Bookmark.BASENAME
+                        );
                     }
                 );
 
@@ -174,7 +244,20 @@ namespace Kumo
                 }
             );
 
-            return bookmarks;
+            _bookmarks = bookmarks.ToDictionary(b => b.Range);
+            return _bookmarks;
+        }
+
+        private Bookmark? Bookmark(int id)
+        {
+            var bs = Bookmarks();
+            return bs.Values.FirstOrDefault(b => b.Id == id);
+        }
+
+        private Bookmark? Bookmark(Range range)
+        {
+            var bs = Bookmarks();
+            return bs[range];
         }
     }
 }

@@ -6,12 +6,12 @@ namespace Kumo
     public record Property
     {
         public Uri Name { get; }
-        public Uri Value { get; }
+        public string Value { get; }
 
         /// <summary>
         ///   Creates a new property with <c>name</c> and <c>value</c>.
         /// </summary>
-        public Property(Uri name, Uri value)
+        public Property(Uri name, string value)
         {
             Name = name;
             Value = value;
@@ -23,7 +23,7 @@ namespace Kumo
         public Property(string name, string value) :
             this(
                 new Uri(name),
-                new Uri(value)
+                value
             )
         { }
     }

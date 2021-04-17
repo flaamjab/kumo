@@ -104,12 +104,6 @@ namespace Kumo
             throw new NotImplementedException();
         }
 
-        /// <summary>Annotate the document text using the <c>annotator</c>.</summary>
-        public void Annotate(IAnnotator annotator)
-        {
-            throw new NotImplementedException();
-        }
-
         /// <summary>
         ///   Flushes and saves the content,
         ///   closes the document, and releases all resources.

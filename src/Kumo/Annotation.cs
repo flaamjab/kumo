@@ -1,9 +1,11 @@
+using System;
 using System.Linq;
 
 namespace Kumo
 {
     class Annotation : IAnnotation
     {
+
         private Bookmark _subject;
         private Bookmark[] _crossrefs;
 
@@ -23,6 +25,11 @@ namespace Kumo
             _subject = subject;
             Properties = properties;
             _crossrefs = crossrefs;
+        }
+
+        public Star ToStar()
+        {
+            throw new NotImplementedException();
         }
     }
 }

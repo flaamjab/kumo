@@ -15,28 +15,35 @@ namespace Kumo
         private W.BookmarkStart _bookmarkStart;
         private W.BookmarkEnd _bookmarkEnd;
 
-        public int ID { get; }
+        public int Id { get; }
 
         public Range Range { get; }
 
         public Bookmark(int id, Body holder, Range range)
         {
-            ID = id;
+            Id = id;
             _holder = holder;
             Range = range;
         }
 
         public Block Apply()
         {
+            if (_bookmarkStart != null || _bookmarkEnd != null)
+            {
+                throw new InvalidOperationException(
+                    "the bookmark is already applied"
+                );
+            }
+
             var b = _holder.Block(Range);
             var (leftOffset, rightOffset) = Range.Offsets(b);
 
-            var _bookmarkStart = new W.BookmarkStart();
-            _bookmarkStart.Id = ID.ToString();
-            _bookmarkStart.Name = BASENAME + ID;
+            _bookmarkStart = new W.BookmarkStart();
+            _bookmarkStart.Id = Id.ToString();
+            _bookmarkStart.Name = BASENAME + Id;
 
-            var _bookmarkEnd = new W.BookmarkEnd();
-            _bookmarkEnd.Id = ID.ToString();
+            _bookmarkEnd = new W.BookmarkEnd();
+            _bookmarkEnd.Id = Id.ToString();
 
             var textStart = b.Nodes.First();
             var textEnd = b.Nodes.Last();
@@ -59,8 +66,15 @@ namespace Kumo
             throw new NotImplementedException();
         }
 
-        public Block Drop()
+        public Block Remove()
         {
+            if (_bookmarkStart == null || _bookmarkEnd == null)
+            {
+                throw new InvalidOperationException(
+                    "the bookmark must be applied before being removed"
+                );
+            }
+
             throw new NotImplementedException();
         }
 
