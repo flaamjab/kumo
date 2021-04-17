@@ -10,13 +10,14 @@ namespace Kumo
     class Body
     {
         private W.Document _content;
-        private Dictionary<Range, Bookmark>? _bookmarks = null;
+        private BookmarkTable _bookmarkTable;
         private RdfStore _rdfStore;
 
         public Body(W.Document content, RdfStore rdfStore)
         {
             _content = content;
             _rdfStore = rdfStore;
+            _bookmarkTable = new BookmarkTable(this, content);
         }
 
         public Range Range(int start, int end)
@@ -45,7 +46,7 @@ namespace Kumo
         public IEnumerable<IAnnotation> Annotations()
         {
             // Get all the bookmarks
-            var bs = Bookmarks();
+            var bs = _bookmarkTable.Bookmarks();
             // Fetch triples from the store
             return (IEnumerable<IAnnotation>)bs.Values
                 .Select(b => Annotation(b.Id))
@@ -58,7 +59,7 @@ namespace Kumo
             Range[] crossrefs)
         {
             // Fetch the bookmark for this range
-            var subjectBookmark = Bookmark(range);
+            var subjectBookmark = _bookmarkTable[range];
             // If the bookmark exists,
             if (subjectBookmark != null)
             {
@@ -73,12 +74,12 @@ namespace Kumo
 
                 // apply it and associate it with this range.
                 newB.Apply();
-                Bookmarks()[range] = newB;
+                _bookmarkTable[range] = newB;
             }
 
             var crossrefBs = crossrefs.Select(cr =>
                 {
-                    var b = Bookmark(cr);
+                    var b = _bookmarkTable[cr];
                     if (b != null)
                     {
                         return b;
@@ -87,7 +88,7 @@ namespace Kumo
                     {
                         var newB = new Bookmark(1, this, range);
                         newB.Apply();
-                        Bookmarks()[range] = newB;
+                        _bookmarkTable[range] = newB;
 
                         return newB;
                     }
@@ -179,7 +180,7 @@ namespace Kumo
                 .Select(p =>
                     {
                        int id = int.Parse(p.Value.ToString());
-                       return Bookmark(id);
+                       return _bookmarkTable[id];
                     }
                 )
                 .ToArray();
@@ -188,76 +189,8 @@ namespace Kumo
                 .Where(p => p.Name != refersTo)
                 .ToArray();
 
-            var subject = Bookmark(id);
+            var subject = _bookmarkTable[id];
             return new Annotation(subject, properties, crossrefs);
-        }
-
-        private Dictionary<Range, Bookmark> Bookmarks()
-        {
-            if (_bookmarks != null)
-            {
-                return _bookmarks;
-            }
-
-            var starts = _content
-                .Descendants<W.BookmarkStart>()
-                .Where(b =>
-                    {
-                        Console.WriteLine(b.Name.Value);
-                        return b.Name.Value.StartsWith(
-                            Kumo.Bookmark.BASENAME
-                        );
-                    }
-                );
-
-            var ends = _content.Descendants<W.BookmarkEnd>();
-            var bookmarkTagPairs = starts.Join(
-                ends,
-                s => s.Id,
-                e => e.Id,
-                (start, end) => (start, end)
-            );
-
-            var runs = _content.Descendants<W.Run>();            
-            var offsets = new Dictionary<W.Run, int>();
-            int offset = 0;
-            foreach (var r in runs)
-            {
-                offsets[r] = offset;
-                offset += r.InnerText.Length;
-            }
-
-            var bookmarks = bookmarkTagPairs.Select(b =>
-                {
-                    int id = int.Parse(b.start.Id.Value);
-
-                    var startRun = (W.Run)b.start.NextSibling();
-                    int rangeStart = offsets[startRun];
-
-                    var endRun = (W.Run)b.end.PreviousSibling();
-                    int rangeEnd = offsets[endRun] + endRun.InnerText.Length;
-
-                    return new Bookmark(
-                        id, this,
-                        new Range(this, rangeStart, rangeEnd)
-                    );
-                }
-            );
-
-            _bookmarks = bookmarks.ToDictionary(b => b.Range);
-            return _bookmarks;
-        }
-
-        private Bookmark? Bookmark(int id)
-        {
-            var bs = Bookmarks();
-            return bs.Values.FirstOrDefault(b => b.Id == id);
-        }
-
-        private Bookmark? Bookmark(Range range)
-        {
-            var bs = Bookmarks();
-            return bs[range];
         }
     }
 }
