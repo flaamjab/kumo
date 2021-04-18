@@ -12,15 +12,18 @@ namespace Kumo.Tests
             return Directory.EnumerateFiles(DIRECTORY);
         }
 
-        public static string WithName(string name)
+        public static string Named(string name)
         {
             return Path.Join(DIRECTORY, name + ".docx");
         }
 
-        public static Document OpenInMemory(string path)
+        public static Document Open(string name, bool autosave = false)
         {
-            var d = Document.Open(path);
-            return d.Clone();
+            var path = Path.Join(DIRECTORY, name + ".docx");
+            var settings = new OpenSettings();
+            settings.AutoSave = autosave;
+
+            return Document.Open(path, true, settings);
         }
     }
 }

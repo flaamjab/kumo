@@ -7,8 +7,7 @@ namespace Kumo.Tests
         [Fact]
         public void Annotations_OnDocumentWithNone_ReturnsEmptyArray()
         {
-            string path = Documents.WithName("bookmarks");
-            using (var d = Document.Open(path))
+            using (var d = Documents.Open("bookmark"))
             {
                 Assert.Empty(d.Annotations());
             }

@@ -5,6 +5,7 @@ using Xunit;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using DocumentFormat.OpenXml;
+using OoxmlOpenSettings = DocumentFormat.OpenXml.Packaging.OpenSettings;
 
 namespace Kumo.Tests
 {
@@ -20,6 +21,31 @@ namespace Kumo.Tests
                 Assert.Throws<IOException>(() => {
                     d.MainDocumentPart.AddCustomXmlPart("text/txt", "id");
                 });
+            }
+        }
+
+        [Fact]
+        public void Autosave_False_DocumentStaysUnchanged()
+        {
+            var settings = new OoxmlOpenSettings();
+            settings.AutoSave = false;
+            var path = Documents.Named("annotated");
+
+            using (var d = WordprocessingDocument.Open(path, true, settings))
+            {
+                var b = d.MainDocumentPart.Document.Body;
+                var t = new Text("IT CHANGED...");
+                var r = new Run(t);
+                var p = new Paragraph(r);
+
+                b.AddChild(p);
+            }
+
+            using (var d = WordprocessingDocument.Open(path, false))
+            {
+                var ps = d.MainDocumentPart.Document.Descendants<Paragraph>();
+                var p = (Paragraph)ps.Last();
+                Assert.Equal("Paragraph C", p.InnerText);
             }
         }
 
@@ -61,7 +87,7 @@ namespace Kumo.Tests
         [Fact]
         public void InnerText_OnDocument_ReturnsAllTextWithinDocument()
         {
-            var path = Documents.WithName("medium");
+            var path = Documents.Named("medium");
             using (var d = WordprocessingDocument.Open(path, false))
             {
                 var text = d.MainDocumentPart.Document.InnerText;
@@ -74,7 +100,7 @@ namespace Kumo.Tests
         [Fact]
         public void Equals_TwoDifferentParagraphs_False()
         {
-            var path = Documents.WithName("small");
+            var path = Documents.Named("small");
             using (var d = WordprocessingDocument.Open(path, false))
             {
                 var content = d.MainDocumentPart.Document;
@@ -87,7 +113,7 @@ namespace Kumo.Tests
         [Fact]
         public void Run_SplittingWithCloningProperties_Work()
         {
-            var path = Documents.WithName("small");
+            var path = Documents.Named("small");
             using (var d = WordprocessingDocument.Open(path, false))
             {
                 var run = d
