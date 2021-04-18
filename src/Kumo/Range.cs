@@ -14,6 +14,10 @@ namespace Kumo
 
         public int End { get; }
 
+        public IAnnotation Annotation => _holder.Annotation(this);
+
+        public bool Annotated => _holder.Annotated(this);
+
         public Range(Body body, int start, int end)
         {
             _holder = body;
@@ -93,16 +97,6 @@ namespace Kumo
         public void Reannotate(IEnumerable<Property> properties)
         {
             throw new NotImplementedException();
-        }
-
-        public IAnnotation Annotation()
-        {
-            return _holder.Annotation(this);
-        }
-
-        public bool Annotated()
-        {
-            return _holder.Annotated(this);
         }
 
         public bool Valid()

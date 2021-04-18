@@ -16,6 +16,12 @@ namespace Kumo
         /// <summary>The character position directly after the end of the range.</summary>
         public int End { get; }
 
+        /// <summary>The annotation for this <c>IRange</c>.</summary>
+        public IAnnotation Annotation { get; }
+
+        /// <summary>Value indicating whether this range has attached properties</summary>
+        public bool Annotated { get; }
+
         /// <summary>
         ///   <para>Retrieves raw text within this <c>Range</c>.</para>
         ///   <para>
@@ -74,15 +80,6 @@ namespace Kumo
         /// </summary>
         /// <param name="properties">The properties to annotate this range with</param>
         public void Reannotate(IEnumerable<Property> properties);
-
-        /// <summary>Fetches the annotation for this <c>IRange</c>.</summary>
-        public IAnnotation Annotation();
-
-        /// <summary>
-        ///   Returns the value indicating whether this <c>IRange</c>
-        ///   has an annotation associated with it
-        /// </summary>
-        public bool Annotated();
 
         /// <summary>
         ///   <para>Checks whether this <c>IRange</c> is valid.</para>
