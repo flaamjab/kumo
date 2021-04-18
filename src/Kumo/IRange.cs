@@ -10,6 +10,12 @@ namespace Kumo
     /// </summary>
     public interface IRange
     {
+        /// <summary>The start character position of the range.</summary>
+        public int Start { get; }
+
+        /// <summary>The character position directly after the end of the range.</summary>
+        public int End { get; }
+
         /// <summary>
         ///   <para>Retrieves raw text within this <c>Range</c>.</para>
         ///   <para>

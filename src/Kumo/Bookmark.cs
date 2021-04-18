@@ -143,7 +143,7 @@ namespace Kumo
         }
     }
 
-    static partial class Extensions
+    static class RunExtensions
     {
         public static (W.Run, W.Run) Split(this W.Run run, Index point)
         {
@@ -176,7 +176,10 @@ namespace Kumo
 
             return new (leftRun, rightRun);
         }
+    }
 
+    static class StringExtensions
+    {
         public static bool Untrimmed(this string s)
         {
             bool leftOverhangs = s.First() == ' ';

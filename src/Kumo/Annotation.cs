@@ -4,35 +4,30 @@ namespace Kumo
 {
     class Annotation : IAnnotation
     {
-        private Bookmark _subject;
-        private Bookmark[] _crossrefs;
-
-        public IRange Subject { get => _subject.Range; }
+        public IRange Subject { get; }
 
         public Property[] Properties { get; }
 
-        public IRange[] Crossrefs
-        {
-            get => _crossrefs.Select(b => b.Range).ToArray();
-        }
+        public IRange[] Crossrefs { get; }
 
         public Annotation(
-            Bookmark subject,
+            Range subject,
             Property[] properties,
-            Bookmark[] crossrefs)
+            Range[] crossrefs)
         {
-            _subject = subject;
+            Subject = subject;
             Properties = properties;
-            _crossrefs = crossrefs;
+            Crossrefs = crossrefs;
         }
 
-        public Description ToDescription()
+        public Description ToDescription(BookmarkTable lookup)
         {
-            return new Description(
-                _subject.Id,
-                Properties,
-                _crossrefs.Select(cr => cr.Id).ToArray()
-            );
+            var subject = lookup.Get(Subject);
+            var crossrefs = Crossrefs
+                .Select(cr => lookup.Get(cr).Id)
+                .ToArray();
+
+            return new Description(subject.Id, Properties, crossrefs);
         }
     }
 }

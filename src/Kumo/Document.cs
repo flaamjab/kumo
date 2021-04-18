@@ -155,7 +155,7 @@ namespace Kumo
         public long MaxCharactersInPart { get; set; }
     }
 
-    static partial class Extensions
+    static partial class ConversionExtensions
     {
         public static OpenXmlOpenSettings ToOpenXmlOpenSettings(
             this OpenSettings settings)
