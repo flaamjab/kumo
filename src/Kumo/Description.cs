@@ -14,7 +14,7 @@ namespace Kumo
 
         public Property[] Properties { get; }
 
-        public int[] Crossrefs { get; }
+        public int[] Relations { get; }
 
         public static Description FromTriples(int subject, Triple[] triples)
         {
@@ -26,21 +26,21 @@ namespace Kumo
                 ))
                 .ToArray();
 
-            var crossrefs = triples
+            var relations = triples
                 .Where(t => t.Object.NodeType == NodeType.Blank)
                 .Select(t => Schema.Unprefixed(
                     ((IBlankNode)t.Object).InternalID)
                 )
                 .ToArray();
 
-            return new Description(subject, properties, crossrefs);
+            return new Description(subject, properties, relations);
         }
 
-        public Description(int subject, Property[] properties, int[] crossrefs)
+        public Description(int subject, Property[] properties, int[] relations)
         {
             Subject = subject;
             Properties = properties;
-            Crossrefs = crossrefs;
+            Relations = relations;
         }
 
         public Triple[] ToTriples(IGraph g)
@@ -55,7 +55,7 @@ namespace Kumo
                 }
             );
 
-            var crossrefTriples = Crossrefs.Select(id =>
+            var crossrefTriples = Relations.Select(id =>
                 {
                     var pred = g.CreateUriNode(Schema.QName(Schema.RefersTo));
                     var obj = g.CreateBlankNode(id.ToString());

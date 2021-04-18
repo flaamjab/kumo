@@ -42,8 +42,24 @@ namespace Kumo
         public IAnnotation Annotate(Property property);
 
         /// <summary>Annotate this <c>IRange</c>.</summary>
+        /// <param name="property">The property to annotate with.</param>
+        /// <param name="relations">The ranges this range relates to.</param>
+        public IAnnotation Annotate(
+            Property property,
+            IEnumerable<IRange> relations
+        );
+
+        /// <summary>Annotate this <c>IRange</c>.</summary>
         /// <param name="properties">The properties to annotate with.</param>
         public IAnnotation Annotate(IEnumerable<Property> properties);
+
+        /// <summary>Annotate this <c>IRange</c>.</summary>
+        /// <param name="properties">The properties to annotate with.</param>
+        /// <param name="relations">The ranges this range relates to.</param>
+        public IAnnotation Annotate(
+            IEnumerable<Property> properties,
+            IEnumerable<IRange> relations
+        );
 
         /// <summary>
         ///   Annotate this <c>IRange</c> replacing its

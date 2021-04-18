@@ -8,26 +8,26 @@ namespace Kumo
 
         public Property[] Properties { get; }
 
-        public IRange[] Crossrefs { get; }
+        public IRange[] Relations { get; }
 
         public Annotation(
-            Range subject,
+            IRange subject,
             Property[] properties,
-            Range[] crossrefs)
+            IRange[] relations)
         {
             Subject = subject;
             Properties = properties;
-            Crossrefs = crossrefs;
+            Relations = relations;
         }
 
         public Description ToDescription(BookmarkTable lookup)
         {
             var subject = lookup.Get(Subject);
-            var crossrefs = Crossrefs
+            var relations = Relations
                 .Select(cr => lookup.Get(cr).Id)
                 .ToArray();
 
-            return new Description(subject.Id, Properties, crossrefs);
+            return new Description(subject.Id, Properties, relations);
         }
     }
 }

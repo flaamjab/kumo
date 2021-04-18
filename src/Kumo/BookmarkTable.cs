@@ -44,7 +44,7 @@ namespace Kumo
             return table.First(b => b.Id == id);
         }
 
-        public Bookmark Mark(Range range)
+        public Bookmark Mark(IRange range)
         {
             if (Marked(range))
             {

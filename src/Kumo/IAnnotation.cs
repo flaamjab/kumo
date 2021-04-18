@@ -10,6 +10,6 @@ namespace Kumo
 
         public Property[] Properties { get; }
 
-        public IRange[] Crossrefs { get; }
+        public IRange[] Relations { get; }
     }
 }

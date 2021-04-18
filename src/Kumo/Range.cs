@@ -27,7 +27,7 @@ namespace Kumo
             var textValues = block.Nodes.Select(n => n.Text);
             var text = String.Join("", textValues);
 
-            var (leftOffset, rightOffset) = Offsets(block);
+            var (leftOffset, rightOffset) = this.Offsets(block);
 
             return text.Substring(
                 leftOffset,
@@ -54,12 +54,34 @@ namespace Kumo
             );
         }
 
+        public IAnnotation Annotate(
+            Property property,
+            IEnumerable<IRange> relations)
+        {
+            return _holder.Annotate(
+                this,
+                new Property[] { property },
+                relations.ToArray()
+            );
+        }
+
         public IAnnotation Annotate(IEnumerable<Property> properties)
         {
             return _holder.Annotate(
                 this,
                 properties.ToArray(),
                 new Range[0]
+            );
+        }
+
+        public IAnnotation Annotate(
+            IEnumerable<Property> properties,
+            IEnumerable<IRange> relations)
+        {
+            return _holder.Annotate(
+                this,
+                properties.ToArray(),
+                relations.ToArray()
             );
         }
 
@@ -133,19 +155,22 @@ namespace Kumo
         }
 
         public override int GetHashCode() => (Start, End).GetHashCode();
+    }
 
-        public (int, int) Offsets(Block block)
+    static class RangeExtensions
+    {
+        public static (int, int) Offsets(this IRange range, Block block)
         {
-            if (Start < block.Start || block.End < End
-                || block.End < Start)
+            if (range.Start < block.Start || block.End < range.End
+                || block.End < range.Start)
             {
                 throw new ArgumentOutOfRangeException(
                     "the Range must be contained within the block"
                 );
             }
 
-            int leftOffset = Start - block.Start;
-            int rightOffset = block.End - End;
+            int leftOffset = range.Start - block.Start;
+            int rightOffset = block.End - range.End;
 
             return (leftOffset, rightOffset);
         }

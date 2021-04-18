@@ -77,9 +77,9 @@ namespace Kumo
         }
 
         public Annotation Annotate(
-            Range range,
+            IRange range,
             Property[] properties,
-            Range[] crossrefs)
+            IRange[] relations)
         {
             Console.WriteLine($"Annotating range({range.Start}, {range.End})");
             // If the bookmark exists,
@@ -100,7 +100,7 @@ namespace Kumo
                 _bookmarkTable.Mark(range);
             }
 
-            foreach (var c in crossrefs)
+            foreach (var c in relations)
             {
                 if (!_bookmarkTable.Marked(c))
                 {
@@ -109,7 +109,7 @@ namespace Kumo
             }
 
             // Create the annotation object.
-            var annotation = new Annotation(range, properties, crossrefs);
+            var annotation = new Annotation(range, properties, relations);
 
             // Using the bookmark's ID, ask the RdfStore
             // to store this annotation.
@@ -241,7 +241,7 @@ namespace Kumo
             BookmarkTable bookmarkTable)
         {
             var refersTo = Schema.Uri(Schema.RefersTo);
-            var crossrefs = d.Properties
+            var relations = d.Properties
                 .Where(p => p.Name == refersTo)
                 .Select(p =>
                     {
@@ -257,7 +257,7 @@ namespace Kumo
 
             var subject = bookmarkTable.Get(d.Subject).Range;
 
-            return new Annotation(subject, properties, crossrefs);
+            return new Annotation(subject, properties, relations);
         }
     }
 }
