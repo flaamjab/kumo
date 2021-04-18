@@ -16,50 +16,106 @@ namespace Kumo
         private const string TEXT_ANNOTATION_PART_ID = "kumo-text-annotations";
 
         private MainDocumentPart _mainPart;
-        private CustomXmlPart? _textAnnotationContainer = null;
+        private CustomXmlPart? _container = null;
         private Graph? _graph = null;
+        private bool _autoSave;
+
+        private CustomXmlPart? Container
+        {
+            get
+            {
+                if (_container == null)
+                {
+                    _container = Load();
+                }
+                
+                return _container;
+            }
+            set => _container = value;
+        }
+
+        private Graph Graph
+        {
+            get
+            {
+                if (_graph != null)
+                {
+                    return _graph;
+                }
+
+                _graph = new Graph();
+                _graph.NamespaceMap.AddNamespace(
+                    Schema.Prefix,
+                    Schema.Namespace
+                );
+
+                if (Container != null)
+                {
+                    using (var reader = new StreamReader(Container.GetStream()))
+                    {
+                        if (!reader.EndOfStream)
+                        {
+                            _parser.Load(_graph, reader);
+                        }
+                    }
+                }
+
+                return _graph;
+            }
+        }
 
         private RdfXmlWriter _writer;
         private RdfXmlParser _parser;
 
-        public RdfStore(MainDocumentPart mainPart)
+        public RdfStore(MainDocumentPart mainPart, bool autoSave)
         {
             _mainPart = mainPart;
 
             _writer = new RdfXmlWriter();
             _parser = new RdfXmlParser();
+
+            _autoSave = autoSave;
         }
 
         public void Assert(Description description)
         {
-            var g = Graph();
-            var triples = description.ToTriples(g);
+            var triples = description.ToTriples(Graph);
             
-            Debug.Assert(triples.Length > 0);
-            g.Assert(triples);
-
-            var c = Container(TEXT_ANNOTATION_PART_ID);
-            
-            using (var ms = new MemoryStream())
+            Console.WriteLine("The following triples will be added to the store:");
+            foreach (var t in triples)
             {
-                var w = new StreamWriter(ms);
-                _writer.Save(g, w, true);
+                Console.WriteLine(t);
+            }
+            
+            Graph.Assert(triples);
 
-                ms.Position = 0;
-                c.FeedData(ms);
+            if (_autoSave)
+            {
+                Save();
             }
         }
 
         public void Retract(string id)
         {
             throw new NotImplementedException();
+
+            if (_autoSave)
+            {
+                Save();
+            }
         }
 
         public Description Get(int id)
         {
-            var g = Graph();
-            var subject = g.GetBlankNode(id.ToString());
-            var triples = g.GetTriplesWithSubject(subject).ToArray();
+            var subject = Graph.GetBlankNode(Schema.Prefixed(id));
+            if (subject == null)
+            {
+                throw new InvalidOperationException(
+                    $"no triples with ID \"{subject}\" exist"
+                );
+            }
+
+            var triples = Graph.GetTriplesWithSubject(subject).ToArray();
 
             if (triples.Length > 0)
             {
@@ -75,9 +131,8 @@ namespace Kumo
 
         public bool Exists(int id)
         {
-            var g = Graph();
-            var subject = g.GetBlankNode(id.ToString());
-            var triples = g.GetTriplesWithSubject(subject).ToArray();
+            var subject = Graph.GetBlankNode(Schema.Prefixed(id));
+            var triples = Graph.GetTriplesWithSubject(subject);
 
             if (triples.FirstOrDefault() == null)
             {
@@ -89,50 +144,40 @@ namespace Kumo
             }
         }
 
-        private Graph Graph()
+        public void Save()
         {
-            if (_graph != null)
+            if (Container == null)
             {
-                return _graph;
+                Container = NewContainer();
             }
 
-            _graph = new Graph();
-            _graph.NamespaceMap.AddNamespace(
-                Schema.Prefix,
-                Schema.Namespace
-            );
-            var container = Container(TEXT_ANNOTATION_PART_ID);
-            using (var reader = new StreamReader(container.GetStream()))
+            using (var ms = new MemoryStream())
             {
-                if (!reader.EndOfStream)
-                {
-                    _parser.Load(_graph, reader);
-                }
+                var w = new StreamWriter(ms);
+                _writer.Save(Graph, w, true);
+
+                ms.Position = 0;
+                Container.FeedData(ms);
             }
 
-            return _graph;
+            Console.WriteLine("The following triples are present in the store:");
+            foreach (var t in Graph.Triples)
+            {
+                Console.WriteLine(t);
+            }
         }
 
-        private CustomXmlPart Container(string id)
+        private CustomXmlPart? Load()
         {
-            if (_textAnnotationContainer != null)
-            {
-                return _textAnnotationContainer;
-            }
-
+            string id = TEXT_ANNOTATION_PART_ID;
             _mainPart.TryGetPartById(id, out var part);
-            if (part == null)
+            if (part is CustomXmlPart)
             {
-                _textAnnotationContainer = _mainPart.AddCustomXmlPart(
-                    CustomXmlPartType.CustomXml, id
-                );
-
-                return _textAnnotationContainer;
+                return (CustomXmlPart)part;
             }
-            else if (part is CustomXmlPart)
+            else if (part == null)
             {
-                _textAnnotationContainer = (CustomXmlPart)part;
-                return _textAnnotationContainer;
+                return null;
             }
             else
             {
@@ -140,6 +185,13 @@ namespace Kumo
                     $"a part with ID \"{id}\" is not a custom XML part"
                 );
             }
+        }
+
+        private CustomXmlPart NewContainer()
+        {
+            return _mainPart.AddCustomXmlPart(
+                CustomXmlPartType.CustomXml, TEXT_ANNOTATION_PART_ID
+            );
         }
     }
 }
