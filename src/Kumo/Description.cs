@@ -18,13 +18,6 @@ namespace Kumo
 
         public static Description FromTriples(int subject, Triple[] triples)
         {
-            if (!triples.All(t => t.Subject.ToString() == subject.ToString()))
-            {
-                throw new ArgumentException(
-                    "all triples must have the same subject ID"
-                );
-            }
-
             var properties = triples
                 .Where(t => t.Object.NodeType == NodeType.Uri)
                 .Select(t => new Property(
@@ -34,8 +27,10 @@ namespace Kumo
                 .ToArray();
 
             var crossrefs = triples
-                .Where(t => t.Subject.NodeType == NodeType.Blank)
-                .Select(t => int.Parse(t.Object.ToString()))
+                .Where(t => t.Object.NodeType == NodeType.Blank)
+                .Select(t => Schema.Unprefixed(
+                    ((IBlankNode)t.Object).InternalID)
+                )
                 .ToArray();
 
             return new Description(subject, properties, crossrefs);
@@ -48,22 +43,22 @@ namespace Kumo
             Crossrefs = crossrefs;
         }
 
-        public Triple[] ToTriples(INodeFactory f)
+        public Triple[] ToTriples(IGraph g)
         {
-            var subject = f.CreateBlankNode(Subject.ToString());
+            var subject = g.CreateBlankNode(Schema.Prefixed(Subject));
 
             var propertyTriples = Properties.Select(p => 
                 {
-                    var pred = f.CreateUriNode(p.Name);
-                    var obj = f.CreateUriNode(p.Value);
+                    var pred = g.CreateUriNode(p.Name);
+                    var obj = g.CreateUriNode(p.Value);
                     return new Triple(subject, pred, obj);
                 }
             );
 
             var crossrefTriples = Crossrefs.Select(id =>
                 {
-                    var pred = f.CreateUriNode(Schema.Uri(Schema.RefersTo));
-                    var obj = f.CreateBlankNode(id.ToString());
+                    var pred = g.CreateUriNode(Schema.QName(Schema.RefersTo));
+                    var obj = g.CreateBlankNode(id.ToString());
                     return new Triple(subject, pred, obj);
                 }
             );

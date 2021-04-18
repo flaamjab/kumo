@@ -1,118 +1,153 @@
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using W = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Kumo
 {
     class BookmarkTable
     {
-        private Dictionary<Range, Bookmark> _bookmarks;
-        private W.Document _content;
+        private Dictionary<Range, Bookmark>? _bookmarks;
+        private SortedSet<int>? _availableIds;
         private Body _holder;
 
-        public Bookmark this[Range index]
-        {
-            get
-            {
-                var bs = Bookmarks();
-                return bs[index];
-            }
-            set
-            {
-                var bs = Bookmarks();
-                bs[index] = value;
-                value.Link();
-            }
-        }
-
-        public Bookmark? this[int index]
-        {
-            get
-            {
-                var bs = Bookmarks();
-                return bs.Values.FirstOrDefault(b => b.Id == index);
-            }
-        }
-
-        public BookmarkTable(Body holder, W.Document content)
+        public BookmarkTable(Body holder)
         {
             _holder = holder;
-            _content = content;
-            _bookmarks = new Dictionary<Range, Bookmark>();
+            _bookmarks = null;
+            _availableIds = null;
         }
 
-        public bool Bookmarked(Range range)
+        public IEnumerable<Bookmark> Bookmarks()
         {
-            return _bookmarks.ContainsKey(range);
+            var table = Table();
+            return table.Values;
         }
 
-        public bool Remove(Range range)
+        public Bookmark Get(Range range)
         {
-            var b = _bookmarks[range];
-            if (b != null)
+            if (!Marked(range))
             {
-                b.Unlink();
-                _bookmarks.Remove(range);
-                return true;
+                throw new InvalidOperationException(
+                    "the range is not marked"
+                );
             }
 
-            return false;
+            var table = Table();
+            return table[range];
         }
 
-        public Dictionary<Range, Bookmark> Bookmarks()
+        public Bookmark Get(int id)
+        {
+            var table = Table().Values;
+            return table.First(b => b.Id == id);
+        }
+
+        public Bookmark Mark(Range range)
+        {
+            if (Marked(range))
+            {
+                throw new InvalidOperationException(
+                    "the table already contains a bookmark for this range"
+                );
+            }
+
+            var table = Table();
+            var id = AcquireId();
+
+            var b = new Bookmark(id, _holder, range);
+            b.Link();
+
+            table.Add(range, b);
+
+            return b;
+        }
+
+        public bool Marked(Range range)
+        {
+            var table = Table();
+            return table.ContainsKey(range);
+        }
+
+        public void Unmark(Range range)
+        {
+            if (!Marked(range))
+            {
+                throw new InvalidOperationException(
+                    "the range is not marked"
+                );
+            }
+
+            var table = Table();
+            var b = table[range];
+            b.Unlink();
+            ReleaseId(b.Id);
+            table.Remove(range);
+        }
+
+        private int AcquireId()
+        {
+            var ids = AvailableIds();
+            if (ids.Count == 0)
+            {
+                throw new InvalidOperationException(
+                    "there are no bookmark IDs available"
+                );
+            }
+
+            var id = ids.Min;
+            ids.Remove(id);
+            if (ids.Count == 0 && id < int.MaxValue)
+            {
+                ids.Add(id + 1);
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    "bookmark IDs have been exhausted"
+                );
+            }
+
+            return id;
+        }
+
+        private void ReleaseId(int id)
+        {
+            var ids = AvailableIds();
+            ids.Add(id);
+        }
+
+        private SortedSet<int> AvailableIds()
+        {
+            if (_availableIds != null)
+            {
+                return _availableIds;
+            }
+
+            var table = Table();
+            var ids = new SortedSet<int>(
+                table.Values.Select(b => b.Id)
+            );
+
+            _availableIds = new SortedSet<int>(Enumerable.Range(1, ids.Max));
+            _availableIds.SymmetricExceptWith(ids);
+            if (ids.Max < int.MaxValue)
+            {
+                _availableIds.Add(ids.Max + 1);
+            }
+
+            return _availableIds;
+        }
+
+        private Dictionary<Range, Bookmark> Table()
         {
             if (_bookmarks != null)
             {
                 return _bookmarks;
             }
 
-            var starts = _content
-                .Descendants<W.BookmarkStart>()
-                .Where(b =>
-                    {
-                        return b.Name.Value.StartsWith(
-                            Kumo.Bookmark.BASENAME
-                        );
-                    }
-                );
-
-            var ends = _content.Descendants<W.BookmarkEnd>();
-            var bookmarkTagPairs = starts.Join(
-                ends,
-                s => s.Id,
-                e => e.Id,
-                (start, end) => (start, end)
-            );
-
-            var runs = _content.Descendants<W.Run>();
-            var offsets = new Dictionary<W.Run, int>();
-            int offset = 0;
-            foreach (var r in runs)
-            {
-                offsets[r] = offset;
-                offset += r.InnerText.Length;
-            }
-
-            var bookmarks = bookmarkTagPairs.Select(b =>
-                {
-                    int id = int.Parse(b.start.Id.Value);
-
-                    var startRun = (W.Run)b.start.NextSibling();
-                    int rangeStart = offsets[startRun];
-
-                    var endRun = (W.Run)b.end.PreviousSibling();
-                    int rangeEnd = offsets[endRun] + endRun.InnerText.Length;
-
-                    return new Bookmark(
-                        id, _holder,
-                        new Range(_holder, rangeStart, rangeEnd)
-                    );
-                }
-            );
-
-            _bookmarks = bookmarks.ToDictionary(b => b.Range);
+            _bookmarks = _holder.Bookmarks();
             return _bookmarks;
         }
     }

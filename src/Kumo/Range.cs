@@ -56,7 +56,11 @@ namespace Kumo
 
         public IAnnotation Annotate(IEnumerable<Property> properties)
         {
-            throw new NotImplementedException();
+            return _holder.Annotate(
+                this,
+                properties.ToArray(),
+                new Range[0]
+            );
         }
 
         public void Reannotate(Property property)
@@ -69,7 +73,7 @@ namespace Kumo
             throw new NotImplementedException();
         }
 
-        public IAnnotation? Annotation()
+        public IAnnotation Annotation()
         {
             return _holder.Annotation(this);
         }
@@ -136,7 +140,7 @@ namespace Kumo
                 || block.End < Start)
             {
                 throw new ArgumentOutOfRangeException(
-                    "The Range must be contained within the block"
+                    "the Range must be contained within the block"
                 );
             }
 

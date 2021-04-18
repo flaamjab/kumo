@@ -53,8 +53,8 @@ namespace Kumo
         /// <param name="properties">The properties to annotate this range with</param>
         public void Reannotate(IEnumerable<Property> properties);
 
-        /// <summary>Fetches the annotation for this <c>IRange</c> if present.</summary>
-        public IAnnotation? Annotation();
+        /// <summary>Fetches the annotation for this <c>IRange</c>.</summary>
+        public IAnnotation Annotation();
 
         /// <summary>
         ///   Returns the value indicating whether this <c>IRange</c>

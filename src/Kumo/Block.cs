@@ -1,9 +1,8 @@
-using System;
 using W = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Kumo
 {
-    /// <summary>Represents a node block.</summary>
+    /// <summary>Represents a block of text nodes.</summary>
     class Block
     {
         public int Start { get; }

@@ -17,7 +17,7 @@ namespace Kumo
         {
             _content = content;
             _rdfStore = rdfStore;
-            _bookmarkTable = new BookmarkTable(this, content);
+            _bookmarkTable = new BookmarkTable(this);
         }
 
         public Range Range(int start, int end)
@@ -33,19 +33,37 @@ namespace Kumo
             return new Range(this, start, end);
         }
 
-        public Annotation? Annotation(Range range)
+        public Annotation Annotation(Range range)
         {
-            // Fetch the bookmark for this range
-            // If the bookmark exists, use its ID to retrieve
-            // the annotation from RdfStore.
-            // Otherwise return null.
+            // If the bookmark exists,
+            if (_bookmarkTable.Marked(range))
+            {
+                // use its ID to retrieve the annotation from RdfStore.
+                var b = _bookmarkTable.Get(range);
+                if (_rdfStore.Exists(b.Id))
+                {
+                    var d = _rdfStore.Get(b.Id);
+                    return d.ToAnnotation(_bookmarkTable);
+                }
+            }
 
-            throw new NotImplementedException();
+            throw new InvalidOperationException(
+                "the range is not annotated"
+            );
         }
 
         public bool Annotated(Range range)
         {
-            throw new NotImplementedException();
+            if (_bookmarkTable.Marked(range))
+            {
+                var b = _bookmarkTable.Get(range);
+                if (_rdfStore.Exists(b.Id))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public IEnumerable<IAnnotation> Annotations()
@@ -53,7 +71,7 @@ namespace Kumo
             // Get all the bookmarks
             var bs = _bookmarkTable.Bookmarks();
             // Fetch triples from the store
-            return (IEnumerable<IAnnotation>)bs.Values
+            return (IEnumerable<IAnnotation>)bs
                 .Select(b => Annotation(b.Id))
                 .Where(b => b != null);
         }
@@ -63,43 +81,42 @@ namespace Kumo
             Property[] properties,
             Range[] crossrefs)
         {
+            Console.WriteLine($"Annotating range({range.Start}, {range.End})");
             // Prepare the bookmark for this range
             Bookmark subjectBookmark;
             // If the bookmark exists,
-            if (_bookmarkTable.Bookmarked(range))
+            if (_bookmarkTable.Marked(range))
             {
                 // assert that there is no annotation for it in the RdfStore.
-                subjectBookmark = _bookmarkTable[range];
-                _rdfStore.Get(subjectBookmark.Id);
+                subjectBookmark = _bookmarkTable.Get(range);
+                if (_rdfStore.Exists(subjectBookmark.Id))
+                {
+                    throw new InvalidOperationException(
+                        "this range is already annotated"
+                    );
+                }
             }
             // If the bookmark does not exists,
             else
             {
-                // create a new bookmark for this range,
-                subjectBookmark = new Bookmark(0, this, range);
-
-                // apply it and associate it with this range.
-                _bookmarkTable[range] = subjectBookmark;
+                subjectBookmark = _bookmarkTable.Mark(range);
             }
 
-            var crossrefBs = crossrefs.Select(cr =>
+            var crossrefBs = crossrefs.Select(r =>
                 {
-                    if (_bookmarkTable.Bookmarked(cr))
+                    if (_bookmarkTable.Marked(r))
                     {
-                        return _bookmarkTable[cr];
+                        return _bookmarkTable.Get(r);
                     }
                     else
                     {
-                        var b = new Bookmark(1, this, range);
-                        _bookmarkTable[range] = b;
-
-                        return b;
+                        return _bookmarkTable.Mark(r);
                     }
                 }
             );
 
             // Create the annotation object.
-            var a = new Annotation(
+            var annotation = new Annotation(
                 subjectBookmark,
                 properties,
                 crossrefBs.ToArray()
@@ -107,9 +124,9 @@ namespace Kumo
 
             // Using the bookmark's ID, ask the RdfStore
             // to store this annotation.
-            _rdfStore.Assert(a.ToDescription());
+            _rdfStore.Assert(annotation.ToDescription());
 
-            return a;
+            return annotation;
         }
 
         public void Deannotate(Range range)
@@ -169,30 +186,89 @@ namespace Kumo
             return new Block(nodes.ToArray(), blockStart, blockEnd);
         }
 
+        public Dictionary<Range, Bookmark> Bookmarks()
+        {
+            var starts = _content
+                .Descendants<W.BookmarkStart>()
+                .Where(b =>
+                    {
+                        return b.Name.Value.StartsWith(
+                            Kumo.Bookmark.BASENAME
+                        );
+                    }
+                );
+
+            var ends = _content.Descendants<W.BookmarkEnd>();
+            var bookmarkTagPairs = starts.Join(
+                ends,
+                s => s.Id,
+                e => e.Id,
+                (start, end) => (start, end)
+            );
+
+            var runs = _content.Descendants<W.Run>();
+            var offsets = new Dictionary<W.Run, int>();
+            int offset = 0;
+            foreach (var r in runs)
+            {
+                offsets[r] = offset;
+                offset += r.InnerText.Length;
+            }
+
+            var bookmarks = bookmarkTagPairs.Select(b =>
+                {
+                    int id = int.Parse(b.start.Id.Value);
+
+                    var startRun = (W.Run)b.start.NextSibling();
+                    int rangeStart = offsets[startRun];
+
+                    var endRun = (W.Run)b.end.PreviousSibling();
+                    int rangeEnd = offsets[endRun] + endRun.InnerText.Length;
+
+                    return new Bookmark(
+                        id, this,
+                        new Range(this, rangeStart, rangeEnd)
+                    );
+                }
+            );
+
+            return bookmarks.ToDictionary(b => b.Range);
+        }
+
         private Annotation? Annotation(int id)
         {
-            var star = _rdfStore.Get(id);
-            if (star == null)
+            var description = _rdfStore.Get(id);
+            if (description == null)
             {
                 return null;
             }
 
+            return description.ToAnnotation(_bookmarkTable);
+        }
+    }
+
+    static partial class Extensions
+    {
+        public static Annotation ToAnnotation(
+            this Description d,
+            BookmarkTable bookmarkTable)
+        {
             var refersTo = Schema.Uri(Schema.RefersTo);
-            var crossrefs = star.Properties
+            var crossrefs = d.Properties
                 .Where(p => p.Name == refersTo)
                 .Select(p =>
                     {
                         int id = int.Parse(p.Value.ToString());
-                        return _bookmarkTable[id];
+                        return bookmarkTable.Get(id);
                     }
                 )
                 .ToArray();
 
-            var properties = star.Properties
+            var properties = d.Properties
                 .Where(p => p.Name != refersTo)
                 .ToArray();
 
-            var subject = _bookmarkTable[id];
+            var subject = bookmarkTable.Get(d.Subject);
 
             return new Annotation(subject, properties, crossrefs);
         }
