@@ -18,7 +18,7 @@ namespace Kumo
 
         public IEnumerable<IRange> Relations => _holder.Relations(this);
 
-        public Range(Body body, int start, int end)
+        internal Range(Body body, int start, int end)
         {
             _holder = body;
             Start = start;
