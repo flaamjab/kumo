@@ -1,9 +1,9 @@
 #nullable enable
 
-using System.Diagnostics;
 using System;
 using System.Linq;
 using System.IO;
+using System.Collections.Generic;
 using DocumentFormat.OpenXml.Packaging;
 using VDS.RDF;
 using VDS.RDF.Writing;
@@ -77,9 +77,9 @@ namespace Kumo
             _autoSave = autoSave;
         }
 
-        public void Assert(Description description)
+        public void Assert(Link link)
         {
-            var triples = description.ToTriples(Graph);
+            var triples = link.ToTriples(Graph);
             
             Console.WriteLine("The following triples will be added to the store:");
             foreach (var t in triples)
@@ -95,7 +95,7 @@ namespace Kumo
             }
         }
 
-        public void Retract(string id)
+        public void Retract(Link link)
         {
             throw new NotImplementedException();
 
@@ -105,7 +105,7 @@ namespace Kumo
             }
         }
 
-        public Description Get(int id)
+        public Link Get(int id)
         {
             var subject = Graph.GetBlankNode(Schema.Prefixed(id));
             if (subject == null)
@@ -119,7 +119,7 @@ namespace Kumo
 
             if (triples.Length > 0)
             {
-                return Description.FromTriples(id, triples);
+                return Link.FromTriples(id, triples);
             }
             else
             {

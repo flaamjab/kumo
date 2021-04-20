@@ -27,9 +27,7 @@ namespace Kumo
         /// <param name="isEditable">
         ///   If <c>true</c>, the document will be opened in ReadWrite mode.
         /// </param>
-        public static Document Open(
-            string path,
-            bool isEditable = false)
+        public static Document Open(string path, bool isEditable = false)
         {
             var options = new OpenSettings();
             return Document.Open(path, isEditable, options);
@@ -98,6 +96,17 @@ namespace Kumo
         }
 
         /// <summary>
+        ///   Creates an editable clone of the document,
+        ///   opened on a System.IO.MemoryStream with
+        ///   expandable capacity and default settings.
+        /// </summary>
+        public Document Clone()
+        {
+            var clone = (WordprocessingDocument)_package.Clone();
+            return new Document(clone, true);
+        }
+
+        /// <summary>
         ///   <para> Saves the document to the underlying stream or path
         ///   that was used to open it.</para>
         ///   <para>Some platforms do not support saving
@@ -125,10 +134,10 @@ namespace Kumo
             _package.Dispose();
         }
 
-        /// <summary>Fetches all the annotations contained within the document.</summary>
-        public IEnumerable<IAnnotation> Annotations()
+        /// <summary>Fetches all annotated ranges contained within the document.</summary>
+        public IEnumerable<IRange> Stars()
         {
-            return _body.Annotations();
+            return _body.Stars();
         }
 
         /// <summary>

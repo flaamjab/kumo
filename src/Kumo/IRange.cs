@@ -10,17 +10,16 @@ namespace Kumo
     /// </summary>
     public interface IRange
     {
+        public IEnumerable<Property> Properties { get; }
+
+        public IEnumerable<IRange> Relations { get; }
+
+
         /// <summary>The start character position of the range.</summary>
         public int Start { get; }
 
         /// <summary>The character position directly after the end of the range.</summary>
         public int End { get; }
-
-        /// <summary>The annotation for this <c>IRange</c>.</summary>
-        public IAnnotation Annotation { get; }
-
-        /// <summary>Value indicating whether this range has attached properties</summary>
-        public bool Annotated { get; }
 
         /// <summary>
         ///   <para>Retrieves raw text within this <c>Range</c>.</para>
@@ -43,43 +42,21 @@ namespace Kumo
         /// <param name="annotator">The annotator to use.</param>
         public void Annotate(IAnnotator annotator);
 
-        /// <summary>Annotate this <c>IRange</c>.</summary>
-        /// <param name="property">The property to annotate with.</param>
-        public IAnnotation Annotate(Property property);
+        /// <summary>Attaches a property to this <c>IRange</c>.</summary>
+        /// <param name="property">The property to attach.</param>
+        public void Attach(Property property);
 
-        /// <summary>Annotate this <c>IRange</c>.</summary>
-        /// <param name="property">The property to annotate with.</param>
-        /// <param name="relations">The ranges this range relates to.</param>
-        public IAnnotation Annotate(
-            Property property,
-            IEnumerable<IRange> relations
-        );
+        /// <summary>Attaches an <c>IRange</c> to this <c>IRange</c>.</summary>
+        /// <param name="range">The range to attach.</param>
+        public void Attach(IRange range);
 
-        /// <summary>Annotate this <c>IRange</c>.</summary>
+        /// <summary>Attaches a collection of properties to this <c>IRange</c>.</summary>
         /// <param name="properties">The properties to annotate with.</param>
-        public IAnnotation Annotate(IEnumerable<Property> properties);
+        public void Attach(IEnumerable<Property> properties);
 
-        /// <summary>Annotate this <c>IRange</c>.</summary>
-        /// <param name="properties">The properties to annotate with.</param>
-        /// <param name="relations">The ranges this range relates to.</param>
-        public IAnnotation Annotate(
-            IEnumerable<Property> properties,
-            IEnumerable<IRange> relations
-        );
-
-        /// <summary>
-        ///   Annotate this <c>IRange</c> replacing its
-        ///   current annotation if it exists.
-        /// </summary>
-        /// <param name="property>">The property to annotate with.</param>
-        public void Reannotate(Property property);
-
-        /// <summary>
-        ///   Annotate this <c>IRange</c> replacing its
-        ///   current annotation if it exists.
-        /// </summary>
-        /// <param name="properties">The properties to annotate this range with</param>
-        public void Reannotate(IEnumerable<Property> properties);
+        /// <summary>Attaches a collection <c>IRange</c>s to this <c>IRange</c>.</summary>
+        /// <param name="ranges">The ranges to attach.</param>
+        public void Attach(IEnumerable<IRange> ranges);
 
         /// <summary>
         ///   <para>Checks whether this <c>IRange</c> is valid.</para>
@@ -99,7 +76,7 @@ namespace Kumo
         ///       - A range that spans multiple table cells.
         ///     </item>
         ///   </list>
-        ///   <para>Only valid ranges can be annotated.</para>
+        ///   <para>Only valid ranges can be annotated with properties and other ranges.</para>
         /// </summary>
         public bool Valid();
     }

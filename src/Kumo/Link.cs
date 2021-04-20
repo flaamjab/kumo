@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using VDS.RDF;
 
@@ -8,42 +9,45 @@ namespace Kumo
     ///   Represents a subject node, with all 
     ///   properties attached to it.
     /// </summary>
-    class Description
+    class Link
     {
         public int Subject { get; }
 
-        public Property[] Properties { get; }
+        public IEnumerable<Property> Properties { get; }
 
-        public int[] Relations { get; }
+        public IEnumerable<int> Relations { get; }
 
-        public static Description FromTriples(int subject, Triple[] triples)
+        public static Link FromTriples(
+            int subject,
+            IEnumerable<Triple> triples)
         {
             var properties = triples
                 .Where(t => t.Object.NodeType == NodeType.Uri)
                 .Select(t => new Property(
                     ((IUriNode)t.Predicate).Uri,
                     ((IUriNode)t.Object).Uri
-                ))
-                .ToArray();
+                ));
 
             var relations = triples
                 .Where(t => t.Object.NodeType == NodeType.Blank)
                 .Select(t => Schema.Unprefixed(
                     ((IBlankNode)t.Object).InternalID)
-                )
-                .ToArray();
+                );
 
-            return new Description(subject, properties, relations);
+            return new Link(subject, properties, relations);
         }
 
-        public Description(int subject, Property[] properties, int[] relations)
+        public Link(
+            int subject,
+            IEnumerable<Property> properties,
+            IEnumerable<int> relations)
         {
             Subject = subject;
             Properties = properties;
             Relations = relations;
         }
 
-        public Triple[] ToTriples(IGraph g)
+        public IEnumerable<Triple> ToTriples(IGraph g)
         {
             var subject = g.CreateBlankNode(Schema.Prefixed(Subject));
 
@@ -65,7 +69,7 @@ namespace Kumo
 
             var triples = propertyTriples.Concat(crossrefTriples);
 
-            return triples.ToArray();
+            return triples;
         }
     }
 }

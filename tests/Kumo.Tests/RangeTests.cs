@@ -12,8 +12,7 @@ namespace Kumo.Tests
         {
             var expectedText = "Paragraph A";
 
-            var path = Documents.Named("small");
-            using (var d = Document.Open(path))
+            using (var d = Documents.Open("small"))
             {
                 var actualText = d.Range(0, 11).Text();
 
@@ -26,8 +25,7 @@ namespace Kumo.Tests
         {
             var expectedText = "AP";
 
-            var path = Documents.Named("small");
-            using (var d = Document.Open(path))
+            using (var d = Documents.Open("small"))
             {
                 var actualText = d.Range(10, 12).Text();
 
@@ -47,8 +45,7 @@ namespace Kumo.Tests
             var text = "Paragraph AParagraph BParagraph C";
             var expectedText = text.Substring((int)start, (int)(end - start));
 
-            var path = Documents.Named("small");
-            using (var d = Document.Open(path))
+            using (var d = Documents.Open("small"))
             {
                 var actualText = d.Range(start, end).Text();
 
@@ -69,14 +66,14 @@ namespace Kumo.Tests
             {
                 var r = d.Range(start, end);
 
-                var a = r.Annotate(
+                r.Attach(
                     new Property(
                         "http://example.org/rel",
                         "http://example.org/val"
                     )
                 );
 
-                Assert.Single(d.Annotations(), a);
+                Assert.Single(d.Stars(), r);
             }
         }
 
@@ -85,26 +82,9 @@ namespace Kumo.Tests
         {
             using (var d = Documents.Open("annotated"))
             {
-                var annotations = d.Annotations();
+                var annotations = d.Stars();
 
                 Assert.Single(annotations);
-            }
-        }
-
-        [Fact]
-        public void Annotate_Range_OneAnnotation()
-        {
-            using (var d = Documents.Open("medium"))
-            {
-                var r = d.Range(0, 5);
-                r.Annotate(
-                    new Property(
-                        "http://example.org/rel",
-                        "http://example.org/val"
-                    )
-                );
-
-                Assert.True(r.Annotated());
             }
         }
 
@@ -113,7 +93,7 @@ namespace Kumo.Tests
         {
             using (var d = Documents.Open("medium"))
             {
-                Assert.Empty(d.Annotations());
+                Assert.Empty(d.Stars());
 
                 var rA = d.Range(0, 100);
                 var rB = d.Range(100, 200);
@@ -123,11 +103,11 @@ namespace Kumo.Tests
                     "http://example.org/value"
                 );
 
-                rA.Annotate(property);
-                rB.Annotate(property);
+                rA.Attach(property);
+                rB.Attach(property);
 
-                Assert.Single(rA.Annotation().Properties);
-                Assert.Single(rB.Annotation().Properties);
+                Assert.Single(rA.Properties);
+                Assert.Single(rB.Properties);
             }
         }
 
@@ -144,13 +124,29 @@ namespace Kumo.Tests
                     "https://example.org/val"
                 );
 
-                rA.Annotate(property);
-                rB.Annotate(property);
+                rA.Attach(property);
+                rB.Attach(property);
 
-                Assert.Single(rA.Annotation().Properties);
-                Assert.Single(rB.Annotation().Properties);
+                Assert.Single(rA.Properties);
+                Assert.Single(rB.Properties);
+            }
+        }
 
-                d.Save();
+        [Fact]
+        public void Annotate_MultiParagraphRange_RangeHasAnnotation()
+        {
+            using (var d = Documents.Open("small"))
+            {
+                var r = d.Range(0, 15);
+
+                var property = new Property(
+                    "http://example.org/rel",
+                    "http://example.org/val"
+                );
+
+                r.Attach(property);
+
+                Assert.Single(r.Properties, property);
             }
         }
     }

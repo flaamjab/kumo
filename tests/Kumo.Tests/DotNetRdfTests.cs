@@ -101,5 +101,22 @@ namespace Kumo.Tests
 
             Assert.Equal(tripleA, tripleB);
         }
+
+        [Fact]
+        public void Assert_DuplicateTriple_TriplesAssertedOnce()
+        {
+            var g = new Graph();
+            
+            var subj = g.CreateUriNode(new Uri("http://example.org/subject"));
+            var pred = g.CreateUriNode(
+                new Uri("http://example.org/predicate")
+            );
+            var obj = g.CreateUriNode(new Uri("http://example.org/object"));
+
+            g.Assert(subj, pred, obj);
+            g.Assert(subj, pred, obj);
+
+            Assert.Single(g.Triples);
+        }
     }
 }

@@ -14,9 +14,9 @@ namespace Kumo
 
         public int End { get; }
 
-        public IAnnotation Annotation => _holder.Annotation(this);
+        public IEnumerable<Property> Properties => _holder.Properties(this);
 
-        public bool Annotated => _holder.Annotated(this);
+        public IEnumerable<IRange> Relations => _holder.Relations(this);
 
         public Range(Body body, int start, int end)
         {
@@ -49,52 +49,22 @@ namespace Kumo
             throw new NotImplementedException();
         }
 
-        public IAnnotation Annotate(Property property)
+        public void Attach(Property property)
         {
-            return _holder.Annotate(
-                this,
-                new Property[] { property },
-                new Range[0]
-            );
+            _holder.Link(this, new Property[] { property });
         }
 
-        public IAnnotation Annotate(
-            Property property,
-            IEnumerable<IRange> relations)
-        {
-            return _holder.Annotate(
-                this,
-                new Property[] { property },
-                relations.ToArray()
-            );
-        }
-
-        public IAnnotation Annotate(IEnumerable<Property> properties)
-        {
-            return _holder.Annotate(
-                this,
-                properties.ToArray(),
-                new Range[0]
-            );
-        }
-
-        public IAnnotation Annotate(
-            IEnumerable<Property> properties,
-            IEnumerable<IRange> relations)
-        {
-            return _holder.Annotate(
-                this,
-                properties.ToArray(),
-                relations.ToArray()
-            );
-        }
-
-        public void Reannotate(Property property)
+        public void Attach(IRange range)
         {
             throw new NotImplementedException();
         }
 
-        public void Reannotate(IEnumerable<Property> properties)
+        public void Attach(IEnumerable<Property> properties)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Attach(IEnumerable<IRange> ranges)
         {
             throw new NotImplementedException();
         }

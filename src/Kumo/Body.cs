@@ -33,92 +33,64 @@ namespace Kumo
             return new Range(this, start, end);
         }
 
-        public Annotation Annotation(Range range)
+        public IEnumerable<Property> Properties(Range range)
         {
-            // If the bookmark exists,
-            if (_bookmarkTable.Marked(range))
+            if (Known(range))
             {
-                // use its ID to retrieve the annotation from RdfStore.
-                var b = _bookmarkTable.Get(range);
-                if (_rdfStore.Exists(b.Id))
-                {
-                    var d = _rdfStore.Get(b.Id);
-                    return d.ToAnnotation(_bookmarkTable);
-                }
+                var link = Link(range);
+                return link.Properties;
             }
-
-            throw new InvalidOperationException(
-                "the range is not annotated"
-            );
-        }
-
-        public bool Annotated(Range range)
-        {
-            if (_bookmarkTable.Marked(range))
-            {
-                var b = _bookmarkTable.Get(range);
-                if (_rdfStore.Exists(b.Id))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public IEnumerable<IAnnotation> Annotations()
-        {
-            // Get all the bookmarks
-            var bs = _bookmarkTable.Bookmarks();
-            // Fetch triples from the store
-            return (IEnumerable<IAnnotation>)bs
-                .Select(b => Annotation(b.Id))
-                .Where(b => b != null);
-        }
-
-        public Annotation Annotate(
-            IRange range,
-            Property[] properties,
-            IRange[] relations)
-        {
-            Console.WriteLine($"Annotating range({range.Start}, {range.End})");
-            // If the bookmark exists,
-            if (_bookmarkTable.Marked(range))
-            {
-                // assert that there is no annotation for it in the RdfStore.
-                var subjectBookmark = _bookmarkTable.Get(range);
-                if (_rdfStore.Exists(subjectBookmark.Id))
-                {
-                    throw new InvalidOperationException(
-                        "this range is already annotated"
-                    );
-                }
-            }
-            // If the bookmark does not exists,
             else
             {
-                _bookmarkTable.Mark(range);
+                return new Property[0];
             }
-
-            foreach (var c in relations)
-            {
-                if (!_bookmarkTable.Marked(c))
-                {
-                    _bookmarkTable.Mark(c);
-                }
-            }
-
-            // Create the annotation object.
-            var annotation = new Annotation(range, properties, relations);
-
-            // Using the bookmark's ID, ask the RdfStore
-            // to store this annotation.
-            _rdfStore.Assert(annotation.ToDescription(_bookmarkTable));
-
-            return annotation;
         }
 
-        public void Deannotate(Range range)
+        public IEnumerable<IRange> Relations(Range range)
+        {
+            if (Known(range))
+            {
+                var link = Link(range);
+                return link.Relations
+                    .Select(id => _bookmarkTable.Get(id).Range);
+            }
+            else
+            {
+                return new Range[0];
+            }
+        }
+
+        public IEnumerable<IRange> Stars()
+        {
+            var stars = _bookmarkTable
+                .Bookmarks()
+                .Where(b => _rdfStore.Exists(b.Id))
+                .Select(b => b.Range);
+
+            return stars;
+        }
+
+        public void Link(IRange range, IEnumerable<Property> properties)
+        {
+            Console.WriteLine($"Annotating range({range.Start}, {range.End})");
+            int subject;
+            if (!_bookmarkTable.Marked(range))
+            {
+                var b = _bookmarkTable.Mark(range);
+                subject = b.Id;
+            }
+            else
+            {
+                var b = _bookmarkTable.Get(range);
+                subject = b.Id;
+            }
+
+            var link = new Link(subject, properties, new int[0]);
+
+            _rdfStore.Assert(link);
+        }
+
+        public void Unlink(Range range, IEnumerable<Property> properties)
         {
             // Fetch the bookmark for this range.
             // If the bookmark does not exist throw an exception.
@@ -222,42 +194,65 @@ namespace Kumo
             return bookmarks.ToDictionary(b => b.Range as IRange);
         }
 
-        private Annotation? Annotation(int id)
+        private bool Known(IRange range)
         {
-            var description = _rdfStore.Get(id);
-            if (description == null)
+            if (_bookmarkTable.Marked(range))
             {
-                return null;
+                // use its ID to retrieve the annotation from RdfStore.
+                var b = _bookmarkTable.Get(range);
+                if (_rdfStore.Exists(b.Id))
+                {
+                    return true;
+                }
             }
 
-            return description.ToAnnotation(_bookmarkTable);
+            return false;
+        }
+
+        private Link Link(IRange range)
+        {
+            var b = _bookmarkTable.Get(range);
+            if (!_rdfStore.Exists(b.Id))
+            {
+                throw new InvalidOperationException(
+                    "the range is bookmarked but not present in the RDF store"
+                );
+            }
+
+            return _rdfStore.Get(b.Id);
         }
     }
 
     static partial class ConversionExtensions
     {
-        public static Annotation ToAnnotation(
-            this Description d,
+        public static IEnumerable<Property> Properties(
+            this Link link,
             BookmarkTable bookmarkTable)
         {
             var refersTo = Schema.Uri(Schema.RefersTo);
-            var relations = d.Properties
+
+            var properties = link.Properties
+                .Where(p => p.Name != refersTo);
+
+            return properties;
+        }
+
+        public static IEnumerable<IRange> Relations(
+            this Link link,
+            BookmarkTable bookmarkTable
+        )
+        {
+            var refersTo = Schema.Uri(Schema.RefersTo);
+            var relations = link.Properties
                 .Where(p => p.Name == refersTo)
                 .Select(p =>
                     {
                         int id = int.Parse(p.Value.ToString());
                         return bookmarkTable.Get(id).Range;
                     }
-                )
-                .ToArray();
+                );
 
-            var properties = d.Properties
-                .Where(p => p.Name != refersTo)
-                .ToArray();
-
-            var subject = bookmarkTable.Get(d.Subject).Range;
-
-            return new Annotation(subject, properties, relations);
+            return relations;
         }
     }
 }
