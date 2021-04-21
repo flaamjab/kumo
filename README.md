@@ -6,7 +6,7 @@ Enriching Microsoft Word documents with semantic annotations.
 
 ## What is Kumo?
 
-Kumo is a semantic annotation library that enables you to easily specify
+Kumo is a semantic annotation library that enables the user to easily specify
 relationships between text fragments within a document and places, concepts,
 people, dates and other things that may be stored in an ontology.
 This is accomplished by providing a simple way to create a relationship
@@ -42,7 +42,7 @@ using (var d = Document.Open("path/to/document.docx"))
 ```
 
 To annotate a text fragment, one must create a Property object
-which represents a edge with node connected to it in a semantic net.
+which represents an edge with node connected to it in a semantic net.
 
 ```C#
 using System;
