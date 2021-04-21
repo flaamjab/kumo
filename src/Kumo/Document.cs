@@ -27,6 +27,7 @@ namespace Kumo
         /// <param name="isEditable">
         ///   If <c>true</c>, the document will be opened in ReadWrite mode.
         /// </param>
+        /// <returns>A new instance of <c>Document</c>.</returns>
         public static Document Open(string path, bool isEditable = false)
         {
             var options = new OpenSettings();
@@ -42,6 +43,7 @@ namespace Kumo
         ///   If <c>true</c>, the document will be opened in ReadWrite mode.
         /// </param>
         /// <param name="settings">Settings for opening the document</param>
+        /// <returns>A new instance of <c>Document</c>.</returns>
         public static Document Open(
             string path,
             bool isEditable,
@@ -64,6 +66,7 @@ namespace Kumo
         ///   If stream is in ReadWrite mode,
         ///   <c>false</c> means the document cannot be edited.
         /// </param>
+        /// <returns>A new instance of <c>Document</c>.</returns>
         public static Document Open(
             Stream stream,
             bool isEditable = false)
@@ -82,6 +85,7 @@ namespace Kumo
         ///   <c>false</c> means the document cannot be edited.
         /// </param>
         /// <param name="settings">Options for opening the document</param>
+        /// <returns>A new instance of <c>Document</c>.</returns>
         public static Document Open(
             Stream stream,
             bool isEditable,
@@ -100,6 +104,7 @@ namespace Kumo
         ///   opened on a System.IO.MemoryStream with
         ///   expandable capacity and default settings.
         /// </summary>
+        /// <returns>A new instance of <c>Document</c>.</returns>
         public Document Clone()
         {
             var clone = (WordprocessingDocument)_package.Clone();
@@ -120,6 +125,8 @@ namespace Kumo
         }
 
         /// <summary>Fetches all the paragraphs contained within the document.</summary>
+        /// <returns>All paragraphs within the document 
+        /// as instances of <c>IRange</c>.</returns>
         public IEnumerable<IRange> Paragraphs()
         {
             throw new NotImplementedException();
@@ -135,6 +142,8 @@ namespace Kumo
         }
 
         /// <summary>Fetches all annotated ranges contained within the document.</summary>
+        /// <returns>All the <c>IRange</c>s in the document that have properties attached
+        /// or relate to some other <c>IRange</c>s.</returns>
         public IEnumerable<IRange> Stars()
         {
             return _body.Stars();
@@ -151,6 +160,7 @@ namespace Kumo
         /// <param name="end">
         ///   The character position directly after the end of the range.
         /// </param>
+        /// <returns>A range for the specified bounds.</range>
         public IRange Range(int start, int end)
         {
             return _body.Range(start, end);
@@ -160,7 +170,21 @@ namespace Kumo
     /// <summary>Settings for opening the document.</summary>
     public class OpenSettings
     {
+        /// <summary>Gets or sets a value indicating whether to
+        /// autosave document modifications. The default value is true.</summary>
         public bool AutoSave { get; set; } = true;
+
+        /// <summary><para>Gets or sets a value that indicates the maximum number of
+        /// allowable characters in an Open XML part.
+        /// A zero (0) value indicates that there are no limits on the size
+        /// of the part. A non-zero value specifies the maximum size,
+        /// in characters.</para>
+        /// <para>This property allows you to mitigate denial of service attacks
+        /// where the attacker submits a package with an extremely
+        /// large Open XML part. By limiting the size of the part, you can
+        /// detect the attack and recover reliably.</para></summary>
+
+
         public long MaxCharactersInPart { get; set; }
     }
 
