@@ -2,11 +2,7 @@
   <PropertyGroup>
     <PackageId>Kumo</PackageId>
     <Title>Kumo Annotation Library</Title>
-    <Description>
-      Kumo is a semantic annotation library that enables the user to easily specify
-      relationships between text fragments within a document and places, concepts,
-      people, dates and other things that may be stored in an ontology.
-    </Description>
+    <PackageDescription>Enriching Microsoft Word documents with semantic annotations.</PackageDescription>
     <Version>0.2.0-alpha</Version>
     <Authors>lambda345</Authors>
     <Company>Perm State University</Company>
@@ -16,11 +12,11 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/flaamjab/kumo.git</RepositoryUrl>
-    <RepositoryCommit>2c444848e2ce0e043e7accdb3f3c7d0cc4d2ff93</RepositoryCommit>
   </PropertyGroup>
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
