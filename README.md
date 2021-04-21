@@ -14,6 +14,8 @@ and apply it to one or more text fragments within the document.
 
 ## Getting started
 
+The library is available at NuGet: https://www.nuget.org/packages/Kumo/
+
 To get the latest version of the library, clone this repository
 and reference the project under [src/Kumo](src/Kumo) in your solution.
 
