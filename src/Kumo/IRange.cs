@@ -4,16 +4,13 @@ using System.Collections.Generic;
 
 namespace Kumo
 {
-    /// <summary>
-    ///   Exposes a range, which references a text excerpt
-    ///   within a document.
-    /// </summary>
+    /// <summary>Exposes a range which is a reference
+    /// to a text fragment within the document.</summary>
     public interface IRange
     {
         public IEnumerable<Property> Properties { get; }
 
         public IEnumerable<IRange> Relations { get; }
-
 
         /// <summary>The start character position of the range.</summary>
         public int Start { get; }
@@ -21,21 +18,18 @@ namespace Kumo
         /// <summary>The character position directly after the end of the range.</summary>
         public int End { get; }
 
-        /// <summary>
-        ///   <para>Retrieves raw text within this <c>Range</c>.</para>
-        ///   <para>
-        ///     Note that paragraphs are generally not separated
-        ///     in any way in raw text.
-        ///     Use the <c>Paragraphs</c> method to split this <c>IRange</c>
-        ///     across paraagraphs.
-        ///   </para>
-        /// </summary>        
+        /// <summary><para>Retrieves raw text within this <c>Range</c>.</para>
+        /// <para>Note that paragraphs are generally not separated
+        /// in any way in raw text. Use the <c>Paragraphs</c> method
+        /// to split this <c>IRange</c> across paraagraphs.</para></summary>     
+        /// <returns>Raw text that this <c>IRange</c> spans.</returns>   
         public string Text();
 
         /// <summary>
         ///   Retrieves a separate <c>IRange</c> for
         ///   each paragraph this <c>IRange</c> spans.
         /// </summary>
+        /// <returns>Paragraphs that this <c>IRange</c> spans</returns>
         public IEnumerable<IRange> Paragraphs();
 
         /// <summary>Annotates this <c>IRange</c>.</summary>
@@ -78,6 +72,7 @@ namespace Kumo
         ///   </list>
         ///   <para>Only valid ranges can be annotated with properties and other ranges.</para>
         /// </summary>
+        /// <returns>The value indicating whether this range is valid or not.</returns>
         public bool Valid();
     }
 }

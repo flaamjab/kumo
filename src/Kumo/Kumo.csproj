@@ -7,7 +7,7 @@
       relationships between text fragments within a document and places, concepts,
       people, dates and other things that may be stored in an ontology.
     </Description>
-    <Version>0.2.0</Version>
+    <Version>0.2.0-alpha</Version>
     <Authors>lambda345</Authors>
     <Company>Perm State University</Company>
     <PackageTags>RDF;Microsoft Word;Annotation;Semantic Web</PackageTags>
@@ -16,7 +16,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/flaamjab/kumo.git</RepositoryUrl>
-    <RepositoryCommit></RepositoryCommit>
+    <RepositoryCommit>73ce74b0a393f49ccbc75d16826b3157d49202ff</RepositoryCommit>
   </PropertyGroup>
 
   <PropertyGroup>

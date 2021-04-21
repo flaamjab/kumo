@@ -139,10 +139,9 @@ namespace Kumo
             throw new NotImplementedException();
         }
 
-        /// <summary>
-        ///   Flushes and saves the content,
-        ///   closes the document, and releases all resources.
-        /// </summary>
+        /// <summary>Flushes and saves the content,
+        /// closes the document, and releases
+        /// all resources.</summary>
         public void Dispose()
         {
             _package.Dispose();
