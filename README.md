@@ -14,14 +14,16 @@ and apply it to one or more text fragments within the document.
 
 ## Getting started
 
-> Please note that the library is work in progress.
->
-> Some features may be unimplemented, while others may contain major bugs.
-
 To get the latest version of the library, clone this repository
 and reference the project under [src/Kumo](src/Kumo) in your solution.
 
 ## Examples
+
+> Please note that the library is work in progress.
+>
+> Some features are yet to be implemented, while others may contain major bugs.
+>
+> The library API is still subject to change.
 
 The examples here demonstrate some of the basic functionality.
 
