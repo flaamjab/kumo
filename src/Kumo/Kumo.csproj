@@ -16,7 +16,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/flaamjab/kumo.git</RepositoryUrl>
-    <RepositoryCommit>73ce74b0a393f49ccbc75d16826b3157d49202ff</RepositoryCommit>
+    <RepositoryCommit>2c444848e2ce0e043e7accdb3f3c7d0cc4d2ff93</RepositoryCommit>
   </PropertyGroup>
 
   <PropertyGroup>
