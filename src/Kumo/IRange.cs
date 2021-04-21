@@ -8,8 +8,11 @@ namespace Kumo
     /// to a text fragment within the document.</summary>
     public interface IRange
     {
+        /// <summary>Gets the properties attached to this <c>IRange</c></summary>
         public IEnumerable<Property> Properties { get; }
 
+        /// <summary>Gets the relation to other 
+        /// <c>IRange</c>s set for this <c>IRange</c></summary>
         public IEnumerable<IRange> Relations { get; }
 
         /// <summary>The start character position of the range.</summary>

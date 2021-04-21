@@ -45,7 +45,7 @@ namespace Kumo
         ///   Creates a new instance of the <c>Document</c>
         ///   class from the specified file.
         /// </summary>
-        /// <param name="path">The path to the document.</para>
+        /// <param name="path">The path to the document.</param>
         /// <param name="isEditable">
         ///   If <c>true</c>, the document will be opened in ReadWrite mode.
         /// </param>
@@ -166,7 +166,7 @@ namespace Kumo
         /// <param name="end">
         ///   The character position directly after the end of the range.
         /// </param>
-        /// <returns>A range for the specified bounds.</range>
+        /// <returns>A range for the specified bounds.</returns>
         public IRange Range(int start, int end)
         {
             return _body.Range(start, end);
@@ -174,6 +174,7 @@ namespace Kumo
 
         /// <summary>Enumerates all ranges for which text matches the provided.</summary>
         /// <param name="text">Text value to match.</param>
+        /// <param name="comparison">The StringComparison to use for matching.</param>
         public IEnumerable<IRange> Ranges(
             string text,
             StringComparison comparison = StringComparison.CurrentCulture)
