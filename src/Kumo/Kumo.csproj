@@ -3,7 +3,7 @@
     <PackageId>Kumo</PackageId>
     <Title>Kumo Annotation Library</Title>
     <PackageDescription>Enriching Microsoft Word documents with semantic annotations.</PackageDescription>
-    <Version>0.2.0-alpha</Version>
+    <Version>0.2.0-alpha-with-xml-docs</Version>
     <Authors>lambda345</Authors>
     <Company>Perm State University</Company>
     <PackageTags>RDF;Microsoft Word;Annotation;Semantic Web</PackageTags>
