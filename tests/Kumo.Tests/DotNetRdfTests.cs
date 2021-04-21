@@ -57,7 +57,6 @@ namespace Kumo.Tests
             var writer = new RdfXmlWriter();
 
             var result = StringWriter.Write(g, writer);
-            Console.WriteLine(result);
         }
 
         [Fact]

@@ -29,7 +29,7 @@ namespace Kumo.Tests
         {
             var settings = new OoxmlOpenSettings();
             settings.AutoSave = false;
-            var path = Documents.Named("annotated");
+            var path = Documents.Named("small");
 
             using (var d = WordprocessingDocument.Open(path, true, settings))
             {
@@ -136,9 +136,6 @@ namespace Kumo.Tests
                     props.Clone() as RunProperties,
                     rightPart
                 });
-
-                Console.WriteLine(leftRun.OuterXml);
-                Console.WriteLine(rightRun.OuterXml);
             }
         }
 

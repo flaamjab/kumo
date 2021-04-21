@@ -13,6 +13,12 @@ namespace Kumo
         private Body _body;
         private RdfStore _rdf;
 
+        /// <summary>
+        ///   The text of the document, with no spaces or
+        ///   newlines between paragraphs.
+        /// </summary>
+        public string Text => _body.Text();
+
         private Document(WordprocessingDocument document, bool autoSave)
         {
             _package = document;
@@ -24,6 +30,7 @@ namespace Kumo
         ///   Creates a new instance of the <c>Document</c>
         ///   class from the specified file.
         /// </summary>
+        /// <param name="path">The path to the document</param>
         /// <param name="isEditable">
         ///   If <c>true</c>, the document will be opened in ReadWrite mode.
         /// </param>
@@ -124,7 +131,7 @@ namespace Kumo
             _rdf.Save();
         }
 
-        /// <summary>Fetches all the paragraphs contained within the document.</summary>
+        /// <summary>Enumerates all the paragraphs contained within the document.</summary>
         /// <returns>All paragraphs within the document 
         /// as instances of <c>IRange</c>.</returns>
         public IEnumerable<IRange> Paragraphs()
@@ -164,6 +171,15 @@ namespace Kumo
         public IRange Range(int start, int end)
         {
             return _body.Range(start, end);
+        }
+
+        /// <summary>Enumerates all ranges for which text matches the provided.</summary>
+        /// <param name="text">Text value to match.</param>
+        public IEnumerable<IRange> Ranges(
+            string text,
+            StringComparison comparison = StringComparison.CurrentCulture)
+        {
+            return _body.Ranges(text, comparison);
         }
     }
 

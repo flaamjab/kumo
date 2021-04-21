@@ -20,6 +20,11 @@ namespace Kumo
             _bookmarkTable = new BookmarkTable(this);
         }
 
+        public string Text()
+        {
+            return _content.InnerText;
+        }
+
         public Range Range(int start, int end)
         {
             if (start >= end && start >= 0 && end > 0)
@@ -31,6 +36,32 @@ namespace Kumo
             }
 
             return new Range(this, start, end);
+        }
+
+        public IEnumerable<Range> Ranges(
+            string text,
+            StringComparison comparison)
+        {
+            var ranges = new LinkedList<Range>();
+            int offset = 0;
+            while (offset != -1)
+            {
+                offset = _content.InnerText.IndexOf(
+                    text, offset,
+                    _content.InnerText.Length - offset,
+                    comparison
+                );
+
+                if (offset != -1)
+                {
+                    int start = offset;
+                    int end = offset + text.Length;
+                    ranges.AddLast(Range(start, end));
+                    offset = end;
+                }   
+            }
+
+            return ranges;
         }
 
         public IEnumerable<Property> Properties(Range range)
@@ -72,7 +103,6 @@ namespace Kumo
 
         public void Link(IRange range, IEnumerable<Property> properties)
         {
-            Console.WriteLine($"Annotating range({range.Start}, {range.End})");
             int subject;
             if (!_bookmarkTable.Marked(range))
             {
@@ -122,7 +152,7 @@ namespace Kumo
                 int tStart = offset;
                 int tEnd = offset + t.Text.Length;
 
-                bool rStartInT = range.Start >= tStart && range.Start <= tEnd;
+                bool rStartInT = range.Start >= tStart && range.Start < tEnd;
                 bool rStartBeforeT = range.Start <= tStart;
 
                 if (rStartInT || rStartBeforeT)
@@ -198,7 +228,6 @@ namespace Kumo
         {
             if (_bookmarkTable.Marked(range))
             {
-                // use its ID to retrieve the annotation from RdfStore.
                 var b = _bookmarkTable.Get(range);
                 if (_rdfStore.Exists(b.Id))
                 {
@@ -220,39 +249,6 @@ namespace Kumo
             }
 
             return _rdfStore.Get(b.Id);
-        }
-    }
-
-    static partial class ConversionExtensions
-    {
-        public static IEnumerable<Property> Properties(
-            this Link link,
-            BookmarkTable bookmarkTable)
-        {
-            var refersTo = Schema.Uri(Schema.RefersTo);
-
-            var properties = link.Properties
-                .Where(p => p.Name != refersTo);
-
-            return properties;
-        }
-
-        public static IEnumerable<IRange> Relations(
-            this Link link,
-            BookmarkTable bookmarkTable
-        )
-        {
-            var refersTo = Schema.Uri(Schema.RefersTo);
-            var relations = link.Properties
-                .Where(p => p.Name == refersTo)
-                .Select(p =>
-                    {
-                        int id = int.Parse(p.Value.ToString());
-                        return bookmarkTable.Get(id).Range;
-                    }
-                );
-
-            return relations;
         }
     }
 }

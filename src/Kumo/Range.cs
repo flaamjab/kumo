@@ -28,6 +28,7 @@ namespace Kumo
         public string Text()
         {
             var block = _holder.Block(this);
+
             var textValues = block.Nodes.Select(n => n.Text);
             var text = String.Join("", textValues);
 
@@ -61,7 +62,10 @@ namespace Kumo
 
         public void Attach(IEnumerable<Property> properties)
         {
-            throw new NotImplementedException();
+            foreach (var p in properties)
+            {
+                Attach(p);
+            }
         }
 
         public void Attach(IEnumerable<IRange> ranges)

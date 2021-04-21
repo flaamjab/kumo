@@ -81,12 +81,6 @@ namespace Kumo
         {
             var triples = link.ToTriples(Graph);
             
-            Console.WriteLine("The following triples will be added to the store:");
-            foreach (var t in triples)
-            {
-                Console.WriteLine(t);
-            }
-            
             Graph.Assert(triples);
 
             if (_autoSave)
@@ -99,10 +93,10 @@ namespace Kumo
         {
             throw new NotImplementedException();
 
-            if (_autoSave)
-            {
-                Save();
-            }
+            // if (_autoSave)
+            // {
+            //     Save();
+            // }
         }
 
         public Link Get(int id)
@@ -158,12 +152,6 @@ namespace Kumo
 
                 ms.Position = 0;
                 Container.FeedData(ms);
-            }
-
-            Console.WriteLine("The following triples are present in the store:");
-            foreach (var t in Graph.Triples)
-            {
-                Console.WriteLine(t);
             }
         }
 
