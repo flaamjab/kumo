@@ -17,9 +17,9 @@ namespace Kumo
 
         public int Id { get; }
 
-        public IRange Range { get; }
+        public Range Range { get; }
 
-        public Bookmark(int id, Body holder, IRange range)
+        public Bookmark(int id, Body holder, Range range)
         {
             Id = id;
             _holder = holder;

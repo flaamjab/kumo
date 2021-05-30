@@ -20,10 +20,7 @@ namespace Kumo
             _bookmarkTable = new BookmarkTable(this);
         }
 
-        public string Text()
-        {
-            return _content.InnerText;
-        }
+        public string Text => _content.InnerText;
 
         public Range Range(int start, int end)
         {
@@ -77,7 +74,7 @@ namespace Kumo
             }
         }
 
-        public IEnumerable<IRange> Relations(Range range)
+        public IEnumerable<Range> Relations(Range range)
         {
             if (Known(range))
             {
@@ -91,7 +88,7 @@ namespace Kumo
             }
         }
 
-        public IEnumerable<IRange> Stars()
+        public IEnumerable<Range> Stars()
         {
             var stars = _bookmarkTable
                 .Bookmarks()
@@ -101,7 +98,7 @@ namespace Kumo
             return stars;
         }
 
-        public void Link(IRange range, IEnumerable<Property> properties)
+        public void Link(Range range, IEnumerable<Property> properties)
         {
             int subject;
             if (!_bookmarkTable.Marked(range))
@@ -131,7 +128,7 @@ namespace Kumo
             throw new NotImplementedException();
         }
 
-        public Block Block(IRange range)
+        public Block Block(Range range)
         {
             int fullLength = _content.InnerText.Length;
             if (range.Start > fullLength || range.End > fullLength)
@@ -177,7 +174,7 @@ namespace Kumo
             return new Block(nodes.ToArray(), blockStart, blockEnd);
         }
 
-        public Dictionary<IRange, Bookmark> Bookmarks()
+        public Dictionary<Range, Bookmark> Bookmarks()
         {
             var starts = _content
                 .Descendants<W.BookmarkStart>()
@@ -221,10 +218,10 @@ namespace Kumo
                 }
             );
 
-            return bookmarks.ToDictionary(b => b.Range as IRange);
+            return bookmarks.ToDictionary(b => b.Range as Range);
         }
 
-        private bool Known(IRange range)
+        private bool Known(Range range)
         {
             if (_bookmarkTable.Marked(range))
             {
@@ -238,7 +235,7 @@ namespace Kumo
             return false;
         }
 
-        private Link Link(IRange range)
+        private Link Link(Range range)
         {
             var b = _bookmarkTable.Get(range);
             if (!_rdfStore.Exists(b.Id))

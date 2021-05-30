@@ -15,11 +15,6 @@ namespace Kumo
             return $"{Prefix}:{predicate}";
         }
 
-        public static Uri Uri(string predicate)
-        {
-            return new Uri($"{Namespace.OriginalString}/{predicate}");
-        }
-
         public static string Prefixed(int id)
         {
             return Prefix + "_" + id.ToString();

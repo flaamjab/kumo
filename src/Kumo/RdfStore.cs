@@ -3,7 +3,6 @@
 using System;
 using System.Linq;
 using System.IO;
-using System.Collections.Generic;
 using DocumentFormat.OpenXml.Packaging;
 using VDS.RDF;
 using VDS.RDF.Writing;
@@ -18,7 +17,9 @@ namespace Kumo
         private MainDocumentPart _mainPart;
         private CustomXmlPart? _container = null;
         private Graph? _graph = null;
+        private RdfXmlWriter _writer;
         private bool _autoSave;
+        private RdfXmlParser _parser;
 
         private CustomXmlPart? Container
         {
@@ -63,9 +64,6 @@ namespace Kumo
                 return _graph;
             }
         }
-
-        private RdfXmlWriter _writer;
-        private RdfXmlParser _parser;
 
         public RdfStore(MainDocumentPart mainPart, bool autoSave)
         {

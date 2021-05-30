@@ -8,7 +8,7 @@ namespace Kumo
 {
     class BookmarkTable
     {
-        private Dictionary<IRange, Bookmark>? _bookmarks;
+        private Dictionary<Range, Bookmark>? _bookmarks;
         private SortedSet<int>? _availableIds;
         private Body _holder;
 
@@ -25,7 +25,7 @@ namespace Kumo
             return table.Values;
         }
 
-        public Bookmark Get(IRange range)
+        public Bookmark Get(Range range)
         {
             if (!Marked(range))
             {
@@ -44,7 +44,7 @@ namespace Kumo
             return table.First(b => b.Id == id);
         }
 
-        public Bookmark Mark(IRange range)
+        public Bookmark Mark(Range range)
         {
             if (Marked(range))
             {
@@ -64,7 +64,7 @@ namespace Kumo
             return b;
         }
 
-        public bool Marked(IRange range)
+        public bool Marked(Range range)
         {
             var table = Table();
             return table.ContainsKey(range);
@@ -140,7 +140,7 @@ namespace Kumo
             return _availableIds;
         }
 
-        private Dictionary<IRange, Bookmark> Table()
+        private Dictionary<Range, Bookmark> Table()
         {
             if (_bookmarks != null)
             {

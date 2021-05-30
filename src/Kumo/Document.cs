@@ -17,7 +17,7 @@ namespace Kumo
         ///   The text of the document, with no spaces or
         ///   newlines between paragraphs.
         /// </summary>
-        public string Text => _body.Text();
+        public string Text => _body.Text;
 
         private Document(WordprocessingDocument document, bool autoSave)
         {
@@ -133,8 +133,8 @@ namespace Kumo
 
         /// <summary>Enumerates all the paragraphs contained within the document.</summary>
         /// <returns>All paragraphs within the document 
-        /// as instances of <c>IRange</c>.</returns>
-        public IEnumerable<IRange> Paragraphs()
+        /// as instances of <c>Range</c>.</returns>
+        public IEnumerable<Range> Paragraphs()
         {
             throw new NotImplementedException();
         }
@@ -148,9 +148,9 @@ namespace Kumo
         }
 
         /// <summary>Fetches all annotated ranges contained within the document.</summary>
-        /// <returns>All the <c>IRange</c>s in the document that have properties attached
-        /// or relate to some other <c>IRange</c>s.</returns>
-        public IEnumerable<IRange> Stars()
+        /// <returns>All the <c>Range</c>s in the document that have properties attached
+        /// or relate to some other <c>Range</c>s.</returns>
+        public IEnumerable<Range> Stars()
         {
             return _body.Stars();
         }
@@ -167,7 +167,7 @@ namespace Kumo
         ///   The character position directly after the end of the range.
         /// </param>
         /// <returns>A range for the specified bounds.</returns>
-        public IRange Range(int start, int end)
+        public Range Range(int start, int end)
         {
             return _body.Range(start, end);
         }
@@ -175,7 +175,7 @@ namespace Kumo
         /// <summary>Enumerates all ranges for which text matches the provided.</summary>
         /// <param name="text">Text value to match.</param>
         /// <param name="comparison">The StringComparison to use for matching.</param>
-        public IEnumerable<IRange> Ranges(
+        public IEnumerable<Range> Ranges(
             string text,
             StringComparison comparison = StringComparison.CurrentCulture)
         {
