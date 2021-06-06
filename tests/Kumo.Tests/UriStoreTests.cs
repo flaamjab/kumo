@@ -14,8 +14,8 @@ namespace Kumo.Tests
             {
                 var store = new UriStore(d.MainDocumentPart);
 
-                Assert.True(store.Uri.Host == Schema.Namespace.Host);
-                Assert.True(store.Uri.AbsolutePath.StartsWith("/document"));
+                Assert.True(store.Value.Host == Schema.Namespace.Host);
+                Assert.True(store.Value.AbsolutePath.StartsWith("/document"));
             }
         }
 
@@ -28,13 +28,13 @@ namespace Kumo.Tests
                 using (var d = WordprocessingDocument.Open(s, true))
                 {
                     var store = new UriStore(d.MainDocumentPart);
-                    uri = store.Uri;
+                    uri = store.Value;
                 }
 
                 using (var d = WordprocessingDocument.Open(s, false))
                 {
                     var store = new UriStore(d.MainDocumentPart);
-                    Assert.Equal(uri, store.Uri);
+                    Assert.Equal(uri, store.Value);
                 }
             }
         }

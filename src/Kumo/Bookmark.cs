@@ -10,7 +10,7 @@ namespace Kumo
     {
         public const string BASENAME = "Kumo_Reference_";
 
-        private Body _holder;
+        private Content _holder;
 
         private W.BookmarkStart _bookmarkStart;
         private W.BookmarkEnd _bookmarkEnd;
@@ -19,14 +19,14 @@ namespace Kumo
 
         public Range Range { get; }
 
-        public Bookmark(int id, Body holder, Range range)
+        public Bookmark(int id, Content holder, Range range)
         {
             Id = id;
             _holder = holder;
             Range = range;
         }
 
-        public void Link()
+        public void Insert()
         {
             if (_bookmarkStart != null || _bookmarkEnd != null)
             {
@@ -64,7 +64,7 @@ namespace Kumo
             }
         }
 
-        public Block Unlink()
+        public Block Remove()
         {
             if (_bookmarkStart == null || _bookmarkEnd == null)
             {

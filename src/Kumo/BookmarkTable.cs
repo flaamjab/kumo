@@ -10,9 +10,9 @@ namespace Kumo
     {
         private Dictionary<Range, Bookmark>? _bookmarks;
         private SortedSet<int>? _availableIds;
-        private Body _holder;
+        private Package _holder;
 
-        public BookmarkTable(Body holder)
+        public BookmarkTable(Package holder)
         {
             _holder = holder;
             _bookmarks = null;
@@ -56,8 +56,8 @@ namespace Kumo
             var table = Table();
             var id = AcquireId();
 
-            var b = new Bookmark(id, _holder, range);
-            b.Link();
+            var b = new Bookmark(id, _holder.Content, range);
+            b.Insert();
 
             table.Add(range, b);
 
@@ -81,7 +81,7 @@ namespace Kumo
 
             var table = Table();
             var b = table[range];
-            b.Unlink();
+            b.Remove();
             ReleaseId(b.Id);
             table.Remove(range);
         }
@@ -147,7 +147,7 @@ namespace Kumo
                 return _bookmarks;
             }
 
-            _bookmarks = _holder.Bookmarks();
+            _bookmarks = _holder.Content.Bookmarks();
             return _bookmarks;
         }
     }

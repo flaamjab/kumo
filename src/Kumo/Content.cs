@@ -1,28 +1,23 @@
-#nullable enable
-
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using W = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Kumo
 {
-    class Body
+    class Content
     {
-        private W.Document _content;
-        private BookmarkTable _bookmarkTable;
-        private RdfStore _rdfStore;
-        private UriStore _uriStore;
+        private Package _holder;
 
-        public Body(W.Document content, RdfStore rdfStore, UriStore uriStore)
+        private W.Document _xml;
+
+        public string Text => _xml.InnerText;
+
+        public Content(Package holder, W.Document content)
         {
-            _content = content;
-            _rdfStore = rdfStore;
-            _uriStore = uriStore;
-            _bookmarkTable = new BookmarkTable(this);
+            _holder = holder;
+            _xml = content;
         }
-
-        public string Text => _content.InnerText;
 
         public Range Range(int start, int end)
         {
@@ -34,7 +29,7 @@ namespace Kumo
                 );
             }
 
-            return new Range(this, start, end);
+            return new Range(_holder, start, end);
         }
 
         public IEnumerable<Range> Ranges(
@@ -45,9 +40,9 @@ namespace Kumo
             int offset = 0;
             while (offset != -1)
             {
-                offset = _content.InnerText.IndexOf(
+                offset = _xml.InnerText.IndexOf(
                     text, offset,
-                    _content.InnerText.Length - offset,
+                    _xml.InnerText.Length - offset,
                     comparison
                 );
 
@@ -63,76 +58,9 @@ namespace Kumo
             return ranges;
         }
 
-        public IEnumerable<Property> Properties(Range range)
-        {
-            if (Known(range))
-            {
-                var link = Link(range);
-                return link.Properties;
-            }
-            else
-            {
-                return new Property[0];
-            }
-        }
-
-        public IEnumerable<Range> Relations(Range range)
-        {
-            if (Known(range))
-            {
-                var link = Link(range);
-                return link.Relations
-                    .Select(id => _bookmarkTable.Get(id).Range);
-            }
-            else
-            {
-                return new Range[0];
-            }
-        }
-
-        public IEnumerable<Range> Stars()
-        {
-            var stars = _bookmarkTable
-                .Bookmarks()
-                .Where(b => _rdfStore.Exists(b.Id))
-                .Select(b => b.Range);
-
-            return stars;
-        }
-
-        public void Link(Range range, IEnumerable<Property> properties)
-        {
-            int subject;
-            if (!_bookmarkTable.Marked(range))
-            {
-                var b = _bookmarkTable.Mark(range);
-                subject = b.Id;
-            }
-            else
-            {
-                var b = _bookmarkTable.Get(range);
-                subject = b.Id;
-            }
-
-            var link = new Link(subject, properties, new int[0]);
-
-            _rdfStore.Assert(link);
-        }
-
-        public void Unlink(Range range, IEnumerable<Property> properties)
-        {
-            // Fetch the bookmark for this range.
-            // If the bookmark does not exist throw an exception.
-            // Otherwise, drop the bookmark, deassociate it with the range.
-            // Using the bookmark's ID, ask the rdfStore to remove
-            // the annotation.
-
-            throw new NotImplementedException();
-        }
-
         public Block Block(Range range)
         {
-            int fullLength = _content.InnerText.Length;
+            int fullLength = _xml.InnerText.Length;
             if (range.Start > fullLength || range.End > fullLength)
             {
                 throw new IndexOutOfRangeException(
@@ -140,7 +68,7 @@ namespace Kumo
                 );
             }
 
-            var ts = _content.Descendants<W.Text>();
+            var ts = _xml.Descendants<W.Text>();
             int offset = 0;
             int blockStart = 0;
             int blockEnd = 0;
@@ -178,7 +106,7 @@ namespace Kumo
 
         public Dictionary<Range, Bookmark> Bookmarks()
         {
-            var starts = _content
+            var starts = _xml
                 .Descendants<W.BookmarkStart>()
                 .Where(b =>
                     {
@@ -188,7 +116,7 @@ namespace Kumo
                     }
                 );
 
-            var ends = _content.Descendants<W.BookmarkEnd>();
+            var ends = _xml.Descendants<W.BookmarkEnd>();
             var bookmarkTagPairs = starts.Join(
                 ends,
                 s => s.Id,
@@ -196,7 +124,7 @@ namespace Kumo
                 (start, end) => (start, end)
             );
 
-            var runs = _content.Descendants<W.Run>();
+            var runs = _xml.Descendants<W.Run>();
             var offsets = new Dictionary<W.Run, int>();
             int offset = 0;
             foreach (var r in runs)
@@ -215,39 +143,12 @@ namespace Kumo
                     var endRun = (W.Run)b.end.PreviousSibling();
                     int rangeEnd = offsets[endRun] + endRun.InnerText.Length;
 
-                    var range = new Range(this, rangeStart, rangeEnd);
+                    var range = Range(rangeStart, rangeEnd);
                     return new Bookmark(id, this, range);
                 }
             );
 
             return bookmarks.ToDictionary(b => b.Range as Range);
-        }
-
-        private bool Known(Range range)
-        {
-            if (_bookmarkTable.Marked(range))
-            {
-                var b = _bookmarkTable.Get(range);
-                if (_rdfStore.Exists(b.Id))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private Link Link(Range range)
-        {
-            var b = _bookmarkTable.Get(range);
-            if (!_rdfStore.Exists(b.Id))
-            {
-                throw new InvalidOperationException(
-                    "the range is bookmarked but not present in the RDF store"
-                );
-            }
-
-            return _rdfStore.Get(b.Id);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Kumo
 
         private Uri? _uri;
 
-        public Uri Uri
+        public Uri Value
         {
             get
             {

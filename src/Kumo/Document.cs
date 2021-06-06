@@ -9,24 +9,17 @@ namespace Kumo
     /// <summary>Represents an MS Word document.</summary>
     public class Document : IDisposable
     {
-        private WordprocessingDocument _package;
-        private Body _body;
-        private RdfStore _rdf;
-        private UriStore _uri;
+        private Package _package;
 
         /// <summary>
         ///   The text of the document, with no spaces or
         ///   newlines between paragraphs.
         /// </summary>
-        public string Text => _body.Text;
+        public string Text => _package.Content.Text;
 
-        private Document(WordprocessingDocument document, bool autoSave)
+        private Document(Package package)
         {
-            _package = document;
-
-            _rdf = new RdfStore(_package.MainDocumentPart, autoSave);
-            _uri = new UriStore(_package.MainDocumentPart);
-            _body = new Body(_package.MainDocumentPart.Document, _rdf, _uri);
+            _package = package;
         }
 
         /// <summary>
@@ -64,7 +57,8 @@ namespace Kumo
                 path, editable, openXmlSettings
             );
 
-            return new Document(d, settings.AutoSave);
+            var p = new Package(d, settings.AutoSave);
+            return new Document(p);
         }
 
         /// <summary>
@@ -106,7 +100,8 @@ namespace Kumo
                 stream, editable, openXmlSettings
             );
 
-            return new Document(d, settings.AutoSave);
+            var p = new Package(d, settings.AutoSave);
+            return new Document(p);
         }
 
         /// <summary>
@@ -117,8 +112,8 @@ namespace Kumo
         /// <returns>A new instance of <c>Document</c>.</returns>
         public Document Clone()
         {
-            var clone = (WordprocessingDocument)_package.Clone();
-            return new Document(clone, true);
+            var clone = (Package)_package.Clone();
+            return new Document(clone);
         }
 
         /// <summary>
@@ -130,7 +125,6 @@ namespace Kumo
         /// </summary>
         public void Save()
         {
-            _rdf.Save();
             _package.Save();
         }
 
@@ -155,7 +149,7 @@ namespace Kumo
         /// or relate to some other <c>Range</c>s.</returns>
         public IEnumerable<Range> Stars()
         {
-            return _body.Stars();
+            return _package.Stars();
         }
 
         /// <summary>
@@ -172,7 +166,7 @@ namespace Kumo
         /// <returns>A range for the specified bounds.</returns>
         public Range Range(int start, int end)
         {
-            return _body.Range(start, end);
+            return _package.Content.Range(start, end);
         }
 
         /// <summary>Enumerates all ranges for which text matches the provided.</summary>
@@ -182,7 +176,7 @@ namespace Kumo
             string text,
             StringComparison comparison = StringComparison.CurrentCulture)
         {
-            return _body.Ranges(text, comparison);
+            return _package.Content.Ranges(text, comparison);
         }
     }
 

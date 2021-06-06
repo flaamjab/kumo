@@ -11,7 +11,7 @@ namespace Kumo
     /// to a text fragment within the document.</summary>
     public class Range : IEquatable<Range>
     {
-        private readonly Body _holder;
+        private readonly Package _holder;
 
         private readonly Lazy<Uri> _uri;
 
@@ -30,9 +30,9 @@ namespace Kumo
         /// <summary>Gets the properties attached to this <c>Range</c></summary>
         public IEnumerable<Property> Properties => _holder.Properties(this);
 
-        internal Range(Body body, int start, int end)
+        internal Range(Package holder, int start, int end)
         {
-            _holder = body;
+            _holder = holder;
             Start = start;
             End = end;
 
@@ -50,7 +50,7 @@ namespace Kumo
         /// <returns>Raw text that this <c>Range</c> spans.</returns>  
         public string Text()
         {
-            var block = _holder.Block(this);
+            var block = _holder.Content.Block(this);
 
             var textValues = block.Nodes.Select(n => n.Text);
             var text = String.Join("", textValues);
