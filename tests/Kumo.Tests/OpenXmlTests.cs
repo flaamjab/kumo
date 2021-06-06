@@ -25,31 +25,6 @@ namespace Kumo.Tests
         }
 
         [Fact]
-        public void Autosave_False_DocumentStaysUnchanged()
-        {
-            var settings = new OoxmlOpenSettings();
-            settings.AutoSave = false;
-            var path = Documents.Named("small");
-
-            using (var d = WordprocessingDocument.Open(path, true, settings))
-            {
-                var b = d.MainDocumentPart.Document.Body;
-                var t = new Text("IT CHANGED...");
-                var r = new Run(t);
-                var p = new Paragraph(r);
-
-                b.AddChild(p);
-            }
-
-            using (var d = WordprocessingDocument.Open(path, false))
-            {
-                var ps = d.MainDocumentPart.Document.Descendants<Paragraph>();
-                var p = (Paragraph)ps.Last();
-                Assert.Equal("Paragraph C", p.InnerText);
-            }
-        }
-
-        [Fact]
         public void Parent_GoingUp_RootIsDocument()
         {
             var path = Documents.All().First();
