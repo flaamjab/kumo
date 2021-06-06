@@ -25,7 +25,17 @@ namespace Kumo
                 .Where(t => t.Object.NodeType == NodeType.Uri)
                 .Select(t => new Property(
                     ((IUriNode)t.Predicate).Uri,
-                    ((IUriNode)t.Object).Uri
+                    t.Object switch
+                    {
+                        LiteralNode n => new Resource.Literal(
+                            n.Value, n.DataType, n.Language
+                        ),
+                        UriNode n => new Resource.Thing(n.Uri),
+                        var n => throw new ArgumentException(
+                            $"Unsupported node type (node {n}) "
+                            + $"in triple {t}"
+                        )
+                    }
                 ));
 
             var relations = triples
@@ -54,14 +64,24 @@ namespace Kumo
             var propertyTriples = Properties.Select(p => 
                 {
                     var pred = g.CreateUriNode(p.Name);
-                    var obj = g.CreateUriNode(p.Value);
+                    INode obj = p.Value switch
+                    {
+                        Resource.Thing t => g.CreateUriNode(t.Uri),
+                        Resource.Literal L => g.CreateLiteralNode(
+                            L.Value, L.Datatype
+                        ),
+                        _ => throw new ArgumentException(
+                            $"Property {p} has a value of unsupported type"
+                            + $"{p.GetType()}"
+                        )
+                    };
                     return new Triple(subject, pred, obj);
                 }
             );
 
             var crossrefTriples = Relations.Select(id =>
                 {
-                    var pred = g.CreateUriNode(Schema.QName(Schema.RefersTo));
+                    var pred = g.CreateUriNode(Schema.ShortName(Schema.RefersTo));
                     var obj = g.CreateBlankNode(id.ToString());
                     return new Triple(subject, pred, obj);
                 }

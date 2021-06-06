@@ -1,16 +1,25 @@
 ﻿#nullable enable
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
 namespace Kumo
 {
-    /// <summary>Exposes a range which is a reference
+    /// <summary>Represents a range which is a reference
     /// to a text fragment within the document.</summary>
     public class Range : IEquatable<Range>
     {
-        private Body _holder;
+        private readonly Body _holder;
+
+        private readonly Lazy<Uri> _uri;
+
+        /// <summary>
+        ///   Gets the URI that uniquely identifies a range within
+        ///   the current document.
+        /// </summary>
+        public Uri Uri => _uri.Value;
 
         /// <summary>The start character position of the range.</summary>
         public int Start { get; }
@@ -18,25 +27,27 @@ namespace Kumo
         /// <summary>The character position directly after the end of the range.</summary>
         public int End { get; }
 
-        /// <summary>Gets the properties attached to this <c>IRange</c></summary>
+        /// <summary>Gets the properties attached to this <c>Range</c></summary>
         public IEnumerable<Property> Properties => _holder.Properties(this);
-
-        /// <summary>Gets the relation to other 
-        /// <c>IRange</c>s set for this <c>IRange</c></summary>
-        public IEnumerable<Range> Relations => _holder.Relations(this);
 
         internal Range(Body body, int start, int end)
         {
             _holder = body;
             Start = start;
             End = end;
+
+            _uri = new Lazy<Uri>(() => new Uri(Path.Combine(
+                Schema.Namespace.OriginalString,
+                "document",
+                $"range{Start}-{End}"
+            )));
         }
 
-        /// <summary><para>Retrieves raw text within this <c>Range</c>.</para>
-        /// <para>Note that paragraphs are generally not separated
+        /// <summary>Retrieves raw text within this <c>Range</c>.</summary>
+        /// <remarks>Note that paragraphs are generally not separated
         /// in any way in raw text. Use the <c>Paragraphs</c> method
-        /// to split this <c>IRange</c> across paraagraphs.</para></summary>     
-        /// <returns>Raw text that this <c>IRange</c> spans.</returns>  
+        /// to split this <c>Range</c> across paraagraphs.</remarks>
+        /// <returns>Raw text that this <c>Range</c> spans.</returns>  
         public string Text()
         {
             var block = _holder.Block(this);
@@ -69,21 +80,14 @@ namespace Kumo
             throw new NotImplementedException();
         }
 
-        /// <summary>Attaches a property to this <c>IRange</c>.</summary>
+        /// <summary>Attaches a property to this <c>Range</c>.</summary>
         /// <param name="property">The property to attach.</param>
         public void Attach(Property property)
         {
             _holder.Link(this, new Property[] { property });
         }
 
-        /// <summary>Attaches an <c>IRange</c> to this <c>IRange</c>.</summary>
-        /// <param name="range">The range to attach.</param>
-        public void Attach(Range range)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>Attaches a collection of properties to this <c>IRange</c>.</summary>
+        /// <summary>Attaches a collection of properties to this <c>Range</c>.</summary>
         /// <param name="properties">The properties to annotate with.</param>
         public void Attach(IEnumerable<Property> properties)
         {
@@ -93,15 +97,8 @@ namespace Kumo
             }
         }
 
-        /// <summary>Attaches a collection <c>IRange</c>s to this <c>IRange</c>.</summary>
-        /// <param name="ranges">The ranges to attach.</param>
-        public void Attach(IEnumerable<Range> ranges)
-        {
-            throw new NotImplementedException();
-        }
-
         /// <summary>
-        ///   <para>Gets a value indicating whether this <c>IRange</c> is valid.</para>
+        ///   <para>Gets a value indicating whether this <c>Range</c> is valid.</para>
         ///   <para>
         ///     A range is considered valid if it spans a sequence
         ///     of neighboring runs. Runs are considered neighbors if they
@@ -118,7 +115,7 @@ namespace Kumo
         ///       - A range that spans multiple table cells.
         ///     </item>
         ///   </list>
-        ///   <para>Only valid ranges can be annotated with properties and other ranges.</para>
+        ///   <para>Only valid ranges can be annotated.</para>
         /// </summary>
         /// <returns>The value indicating whether this range is valid or not.</returns>
         public bool Valid()
@@ -126,6 +123,7 @@ namespace Kumo
             throw new NotImplementedException();
         }
 
+        /// <summary>Decides whether two Ranges are same.</summary>
         public static bool operator ==(Range lhs, Range rhs)
         {
             if (lhs is null)
@@ -141,15 +139,18 @@ namespace Kumo
             return lhs.Equals(rhs);
         }
 
+        /// <summary>Decides whether two Ranges are different.</summary>
         public static bool operator !=(
             Range lhs, Range rhs
         ) => !(lhs == rhs);
 
+        /// <summary>Decides whether this Range equals to some object.</summary>
         public override bool Equals(object? obj)
         {
             return Equals(obj as Range);
         }
 
+        /// <summary>Decides whether this Range equals to some other Range.</summary>
         public bool Equals(Range? other)
         {
             if (other is null)
@@ -170,6 +171,8 @@ namespace Kumo
             return (Start, End) == (other.Start, other.End);
         }
 
+        /// <summary>Calculates the hash code for the current <c>Range</c> instance.</summary>
+        /// <returns>The hash code for the current <c>Range</c> instance.</returns>
         public override int GetHashCode() => (Start, End).GetHashCode();
     }
 

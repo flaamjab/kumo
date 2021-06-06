@@ -12,11 +12,13 @@ namespace Kumo
         private W.Document _content;
         private BookmarkTable _bookmarkTable;
         private RdfStore _rdfStore;
+        private UriStore _uriStore;
 
-        public Body(W.Document content, RdfStore rdfStore)
+        public Body(W.Document content, RdfStore rdfStore, UriStore uriStore)
         {
             _content = content;
             _rdfStore = rdfStore;
+            _uriStore = uriStore;
             _bookmarkTable = new BookmarkTable(this);
         }
 

@@ -62,14 +62,14 @@ namespace Kumo.Tests
         public void Annotate_SingleAnnotation_DocumentHasNewAnnotation(
             int start, int end)
         {
-            using (var d = Documents.Open("small"))
+            using (var d = Documents.Open("small", true))
             {
                 var r = d.Range(start, end);
 
                 r.Attach(
                     new Property(
-                        "http://example.org/rel",
-                        "http://example.org/val"
+                        new ("http://example.org/rel"),
+                        new Resource.Thing("http://example.org/val")
                     )
                 );
 
@@ -91,7 +91,7 @@ namespace Kumo.Tests
         [Fact]
         public void Annotate_TwoNonIntersectingRanges_EachHasAnnotation()
         {
-            using (var d = Documents.Open("medium"))
+            using (var d = Documents.Open("medium", true))
             {
                 Assert.Empty(d.Stars());
 
@@ -99,8 +99,8 @@ namespace Kumo.Tests
                 var rB = d.Range(100, 200);
 
                 var property = new Property(
-                    "http://example.org/predicate",
-                    "http://example.org/value"
+                    new ("http://example.org/predicate"),
+                    new Resource.Thing("http://example.org/value")
                 );
 
                 rA.Attach(property);
@@ -114,14 +114,14 @@ namespace Kumo.Tests
         [Fact]
         public void Annotate_RangeWithinRangeOuterInner_EachHasAnnotation()
         {
-            using (var d = Documents.Open("medium"))
+            using (var d = Documents.Open("medium", true))
             {
                 var rA = d.Range(0, 10);
                 var rB = d.Range(3, 7);
 
                 var property = new Property(
-                    "https://example.org/rel",
-                    "https://example.org/val"
+                    new("https://example.org/rel"),
+                    new Resource.Thing("https://example.org/val")
                 );
 
                 rA.Attach(property);
@@ -135,13 +135,13 @@ namespace Kumo.Tests
         [Fact]
         public void Annotate_MultiParagraphRange_RangeHasAnnotation()
         {
-            using (var d = Documents.Open("small"))
+            using (var d = Documents.Open("small", true))
             {
                 var r = d.Range(0, 15);
 
                 var property = new Property(
-                    "http://example.org/rel",
-                    "http://example.org/val"
+                    new("http://example.org/rel"),
+                    new Resource.Thing("http://example.org/val")
                 );
 
                 r.Attach(property);

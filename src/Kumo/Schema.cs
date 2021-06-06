@@ -2,7 +2,7 @@ using System;
 
 namespace Kumo
 {
-    abstract class Schema
+    static class Schema
     {
         public static Uri Namespace { get; } = new Uri("https://kumo.org");
 
@@ -10,7 +10,7 @@ namespace Kumo
 
         public static string RefersTo { get; } = "RefersTo";
 
-        public static string QName(string predicate)
+        public static string ShortName(string predicate)
         {
             return $"{Prefix}:{predicate}";
         }

@@ -161,7 +161,7 @@ namespace Kumo
             {
                 return (CustomXmlPart)part;
             }
-            else if (part == null)
+            else if (part is null)
             {
                 return null;
             }

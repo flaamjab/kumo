@@ -12,6 +12,7 @@ namespace Kumo
         private WordprocessingDocument _package;
         private Body _body;
         private RdfStore _rdf;
+        private UriStore _uri;
 
         /// <summary>
         ///   The text of the document, with no spaces or
@@ -22,8 +23,10 @@ namespace Kumo
         private Document(WordprocessingDocument document, bool autoSave)
         {
             _package = document;
+
             _rdf = new RdfStore(_package.MainDocumentPart, autoSave);
-            _body = new Body(_package.MainDocumentPart.Document, _rdf);
+            _uri = new UriStore(_package.MainDocumentPart);
+            _body = new Body(_package.MainDocumentPart.Document, _rdf, _uri);
         }
 
         /// <summary>
@@ -31,14 +34,14 @@ namespace Kumo
         ///   class from the specified file.
         /// </summary>
         /// <param name="path">The path to the document</param>
-        /// <param name="isEditable">
+        /// <param name="editable">
         ///   If <c>true</c>, the document will be opened in ReadWrite mode.
         /// </param>
         /// <returns>A new instance of <c>Document</c>.</returns>
-        public static Document Open(string path, bool isEditable = false)
+        public static Document Open(string path, bool editable = false)
         {
             var options = new OpenSettings();
-            return Document.Open(path, isEditable, options);
+            return Document.Open(path, editable, options);
         }
 
         /// <summary>
@@ -46,19 +49,19 @@ namespace Kumo
         ///   class from the specified file.
         /// </summary>
         /// <param name="path">The path to the document.</param>
-        /// <param name="isEditable">
+        /// <param name="editable">
         ///   If <c>true</c>, the document will be opened in ReadWrite mode.
         /// </param>
         /// <param name="settings">Settings for opening the document</param>
         /// <returns>A new instance of <c>Document</c>.</returns>
         public static Document Open(
             string path,
-            bool isEditable,
+            bool editable,
             OpenSettings settings)
         {
             var openXmlSettings = settings.ToOpenXmlOpenSettings();
             var d = WordprocessingDocument.Open(
-                path, isEditable, openXmlSettings
+                path, editable, openXmlSettings
             );
 
             return new Document(d, settings.AutoSave);
@@ -69,17 +72,17 @@ namespace Kumo
         ///   from IO stream.
         /// </summary>
         /// <param name="stream">The stream to open the document from.</param>
-        /// <param name="isEditable">
+        /// <param name="editable">
         ///   If stream is in ReadWrite mode,
         ///   <c>false</c> means the document cannot be edited.
         /// </param>
         /// <returns>A new instance of <c>Document</c>.</returns>
         public static Document Open(
             Stream stream,
-            bool isEditable = false)
+            bool editable = false)
         {
             var options = new OpenSettings();
-            return Document.Open(stream, isEditable, options);
+            return Document.Open(stream, editable, options);
         }
 
         /// <summary>
@@ -87,20 +90,20 @@ namespace Kumo
         ///   from thes IO stream.
         /// </summary>
         /// <param name="stream">The stream to open the document from.</param>
-        /// <param name="isEditable">
-        ///   If stream is in ReadWrite mode,
+        /// <param name="editable">
+        ///   If <c>stream</c> is in <c>ReadWrite</c> mode,
         ///   <c>false</c> means the document cannot be edited.
         /// </param>
         /// <param name="settings">Options for opening the document</param>
         /// <returns>A new instance of <c>Document</c>.</returns>
         public static Document Open(
             Stream stream,
-            bool isEditable,
+            bool editable,
             OpenSettings settings)
         {
             var openXmlSettings = settings.ToOpenXmlOpenSettings();
             var d = WordprocessingDocument.Open(
-                stream, isEditable, openXmlSettings
+                stream, editable, openXmlSettings
             );
 
             return new Document(d, settings.AutoSave);
@@ -108,7 +111,7 @@ namespace Kumo
 
         /// <summary>
         ///   Creates an editable clone of the document,
-        ///   opened on a System.IO.MemoryStream with
+        ///   opened on a <c>System.IO.MemoryStream</c> with
         ///   expandable capacity and default settings.
         /// </summary>
         /// <returns>A new instance of <c>Document</c>.</returns>
@@ -127,8 +130,8 @@ namespace Kumo
         /// </summary>
         public void Save()
         {
-            _package.Save();
             _rdf.Save();
+            _package.Save();
         }
 
         /// <summary>Enumerates all the paragraphs contained within the document.</summary>
@@ -199,8 +202,6 @@ namespace Kumo
         /// where the attacker submits a package with an extremely
         /// large Open XML part. By limiting the size of the part, you can
         /// detect the attack and recover reliably.</para></summary>
-
-
         public long MaxCharactersInPart { get; set; }
     }
 

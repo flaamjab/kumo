@@ -17,13 +17,23 @@ namespace Kumo.Tests
             return Path.Join(DIRECTORY, name + ".docx");
         }
 
-        public static Document Open(string name, bool autosave = false)
+        public static MemoryStream MemoryStream(string name)
         {
-            var path = Path.Join(DIRECTORY, name + ".docx");
-            var settings = new OpenSettings();
-            settings.AutoSave = autosave;
+            var path = Named(name);
+            using (var fs = new FileStream(
+                path, FileMode.Open, FileAccess.ReadWrite))
+            {
+                var ms = new MemoryStream();
+                fs.CopyTo(ms);
 
-            return Document.Open(path, true, settings);
+                return ms;
+            }
+        }
+
+        public static Document Open(string name, bool editable = false)
+        {
+            var stream = MemoryStream(name);
+            return Document.Open(stream, editable);
         }
     }
 }
