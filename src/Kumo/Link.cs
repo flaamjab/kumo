@@ -11,14 +11,12 @@ namespace Kumo
     /// </summary>
     class Link
     {
-        public int Subject { get; }
+        public Uri Subject { get; }
 
         public IEnumerable<Property> Properties { get; }
 
-        public IEnumerable<int> Relations { get; }
-
         public static Link FromTriples(
-            int subject,
+            Uri subject,
             IEnumerable<Triple> triples)
         {
             var properties = triples
@@ -38,30 +36,22 @@ namespace Kumo
                     }
                 ));
 
-            var relations = triples
-                .Where(t => t.Object.NodeType == NodeType.Blank)
-                .Select(t => Schema.Unprefixed(
-                    ((IBlankNode)t.Object).InternalID)
-                );
-
-            return new Link(subject, properties, relations);
+            return new Link(subject, properties);
         }
 
         public Link(
-            int subject,
-            IEnumerable<Property> properties,
-            IEnumerable<int> relations)
+            Uri subject,
+            IEnumerable<Property> properties)
         {
             Subject = subject;
             Properties = properties;
-            Relations = relations;
         }
 
-        public IEnumerable<Triple> ToTriples(IGraph g)
+        public IEnumerable<Triple> ToTriples(INodeFactory g)
         {
-            var subject = g.CreateBlankNode(Schema.Prefixed(Subject));
+            var subject = g.CreateUriNode(Subject);
 
-            var propertyTriples = Properties.Select(p => 
+            var triples = Properties.Select(p => 
                 {
                     var pred = g.CreateUriNode(p.Name);
                     INode obj = p.Value switch
@@ -78,16 +68,6 @@ namespace Kumo
                     return new Triple(subject, pred, obj);
                 }
             );
-
-            var crossrefTriples = Relations.Select(id =>
-                {
-                    var pred = g.CreateUriNode(Schema.ShortName(Schema.RefersTo));
-                    var obj = g.CreateBlankNode(id.ToString());
-                    return new Triple(subject, pred, obj);
-                }
-            );
-
-            var triples = propertyTriples.Concat(crossrefTriples);
 
             return triples;
         }

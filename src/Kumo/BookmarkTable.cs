@@ -12,6 +12,20 @@ namespace Kumo
         private SortedSet<int>? _availableIds;
         private Package _holder;
 
+        private Dictionary<Range, Bookmark> Table
+        {
+            get
+            {
+                if (_bookmarks != null)
+                {
+                    return _bookmarks;
+                }
+
+                _bookmarks = _holder.Content.Bookmarks();
+                return _bookmarks;
+            }
+        }
+
         public BookmarkTable(Package holder)
         {
             _holder = holder;
@@ -21,11 +35,11 @@ namespace Kumo
 
         public IEnumerable<Bookmark> Bookmarks()
         {
-            var table = Table();
+            var table = Table;
             return table.Values;
         }
 
-        public Bookmark Get(Range range)
+        public Bookmark Lookup(Range range)
         {
             if (!Marked(range))
             {
@@ -34,14 +48,14 @@ namespace Kumo
                 );
             }
 
-            var table = Table();
+            var table = Table;
             return table[range];
         }
 
-        public Bookmark Get(int id)
+        public Bookmark Lookup(int id)
         {
-            var table = Table().Values;
-            return table.First(b => b.Id == id);
+            var values = Table.Values;
+            return values.First(b => b.Id == id);
         }
 
         public Bookmark Mark(Range range)
@@ -53,7 +67,7 @@ namespace Kumo
                 );
             }
 
-            var table = Table();
+            var table = Table;
             var id = AcquireId();
 
             var b = new Bookmark(id, _holder.Content, range);
@@ -66,8 +80,7 @@ namespace Kumo
 
         public bool Marked(Range range)
         {
-            var table = Table();
-            return table.ContainsKey(range);
+            return Table.ContainsKey(range);
         }
 
         public void Unmark(Range range)
@@ -79,7 +92,7 @@ namespace Kumo
                 );
             }
 
-            var table = Table();
+            var table = Table;
             var b = table[range];
             b.Remove();
             ReleaseId(b.Id);
@@ -125,7 +138,7 @@ namespace Kumo
                 return _availableIds;
             }
 
-            var table = Table();
+            var table = Table;
             var ids = new SortedSet<int>(
                 table.Values.Select(b => b.Id)
             );
@@ -138,17 +151,6 @@ namespace Kumo
             }
 
             return _availableIds;
-        }
-
-        private Dictionary<Range, Bookmark> Table()
-        {
-            if (_bookmarks != null)
-            {
-                return _bookmarks;
-            }
-
-            _bookmarks = _holder.Content.Bookmarks();
-            return _bookmarks;
         }
     }
 }

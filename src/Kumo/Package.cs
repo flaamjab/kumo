@@ -1,10 +1,10 @@
 #nullable enable
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using DocumentFormat.OpenXml.Packaging;
-using W = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Kumo
 {
@@ -13,9 +13,11 @@ namespace Kumo
     {
         private WordprocessingDocument _doc;
         private BookmarkTable _bookmarkTable;
-        private RdfStore _rdf;
+        private Lazy<RdfStore> _rdf;
         private UriStore _uri;
         private bool _autoSave;
+
+        private RdfStore Rdf => _rdf.Value;
 
         public Content Content { get; }
 
@@ -25,7 +27,26 @@ namespace Kumo
         {
             Content = new Content(this, document.MainDocumentPart.Document);
             _doc = document;
-            _rdf = new RdfStore(document.MainDocumentPart, autoSave);
+
+            _rdf = new Lazy<RdfStore>(() =>
+                {
+                    var rdf = new RdfStore(autoSave);
+                    var part = CustomXmlPart(RdfStore.ID);
+
+                    if (part is not null)
+                    {
+                        using (var s = part.GetStream(
+                            FileMode.Open,
+                            FileAccess.Read))
+                        {
+                            rdf.Load(s);
+                        }
+                    }
+
+                    return rdf;
+                }
+            );
+
             _uri = new UriStore(document.MainDocumentPart);
             _bookmarkTable = new BookmarkTable(this);
         }
@@ -38,7 +59,17 @@ namespace Kumo
         public void Save()
         {
             _doc.Save();
-            _rdf.Save();
+
+            var part = CustomXmlPart(RdfStore.ID);
+            if (part is null)
+            {
+                part = NewCustomXmlPart(RdfStore.ID, "text/plain");
+            }
+
+            using (var s = part.GetStream(FileMode.Open, FileAccess.Write))
+            {
+                Rdf.Save(s);
+            }
         }
 
         public Package Clone()
@@ -60,25 +91,12 @@ namespace Kumo
             }
         }
 
-        public IEnumerable<Range> Relations(Range range)
-        {
-            if (Known(range))
-            {
-                var link = Link(range);
-                return link.Relations
-                    .Select(id => _bookmarkTable.Get(id).Range);
-            }
-            else
-            {
-                return new Range[0];
-            }
-        }
-
         public IEnumerable<Range> Stars()
         {
+            var g = Rdf.RangeGraph;
             var stars = _bookmarkTable
                 .Bookmarks()
-                .Where(b => _rdf.Exists(b.Id))
+                .Where(b => g.Exists(b.Range.Uri))
                 .Select(b => b.Range);
 
             return stars;
@@ -86,21 +104,15 @@ namespace Kumo
 
         public void Link(Range range, IEnumerable<Property> properties)
         {
-            int subject;
             if (!_bookmarkTable.Marked(range))
             {
-                var b = _bookmarkTable.Mark(range);
-                subject = b.Id;
-            }
-            else
-            {
-                var b = _bookmarkTable.Get(range);
-                subject = b.Id;
+                _bookmarkTable.Mark(range);
             }
 
-            var link = new Link(subject, properties, new int[0]);
+            var link = new Link(range.Uri, properties);
 
-            _rdf.Assert(link);
+            var g = Rdf.RangeGraph;
+            g.Assert(link);
         }
 
         public void Unlink(Range range, IEnumerable<Property> properties)
@@ -116,10 +128,11 @@ namespace Kumo
 
         private bool Known(Range range)
         {
+            var graph = Rdf.RangeGraph;
             if (_bookmarkTable.Marked(range))
             {
-                var b = _bookmarkTable.Get(range);
-                if (_rdf.Exists(b.Id))
+                var b = _bookmarkTable.Lookup(range);
+                if (graph.Exists(range.Uri))
                 {
                     return true;
                 }
@@ -130,15 +143,41 @@ namespace Kumo
 
         private Link Link(Range range)
         {
-            var b = _bookmarkTable.Get(range);
-            if (!_rdf.Exists(b.Id))
+            var b = _bookmarkTable.Lookup(range);
+            var g = Rdf.RangeGraph;
+            if (!g.Exists(range.Uri))
             {
                 throw new InvalidOperationException(
-                    "the range is bookmarked but not present in the RDF store"
+                    "The range is bookmarked but not present in the RDF store"
                 );
             }
 
-            return _rdf.Get(b.Id);
+            return g.Link(range.Uri);
+        }
+
+        private CustomXmlPart? CustomXmlPart(string id)
+        {
+            _doc.MainDocumentPart.TryGetPartById(id, out var part);
+            if (part is not null)
+            {
+                return _doc.MainDocumentPart.GetPartById(id) switch
+                {
+                    CustomXmlPart p => p,
+                    _ => throw new ArgumentException(
+                        $"The part with id {id}"
+                        + " is not a CustomXmlPart part"
+                    )
+                };
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private CustomXmlPart NewCustomXmlPart(string id, string contentType)
+        {
+            return _doc.MainDocumentPart.AddCustomXmlPart(contentType, id);
         }
     }
 }

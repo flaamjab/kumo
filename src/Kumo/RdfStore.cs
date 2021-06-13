@@ -1,183 +1,79 @@
-#nullable enable
-
 using System;
-using System.Linq;
 using System.IO;
-using DocumentFormat.OpenXml.Packaging;
 using VDS.RDF;
-using VDS.RDF.Writing;
 using VDS.RDF.Parsing;
+using VDS.RDF.Writing;
 
 namespace Kumo
 {
-    class RdfStore
+    class RdfStore : IDisposable
     {
-        private const string TEXT_ANNOTATION_PART_ID = "kumo-text-annotations";
+        public const string ID = "kumo-rdf-store";
 
-        private MainDocumentPart _mainPart;
-        private CustomXmlPart? _container = null;
-        private Graph? _graph = null;
-        private RdfXmlWriter _writer;
+        private TripleStore _tripleStore;
         private bool _autoSave;
-        private RdfXmlParser _parser;
+        private RangeGraph _rangeGraph;
 
-        private CustomXmlPart? Container
+        public RangeGraph RangeGraph => _rangeGraph;
+
+        public RdfStore(bool autoSave)
         {
-            get
-            {
-                if (_container == null)
-                {
-                    _container = Load();
-                }
-                
-                return _container;
-            }
-            set => _container = value;
-        }
-
-        private Graph Graph
-        {
-            get
-            {
-                if (_graph != null)
-                {
-                    return _graph;
-                }
-
-                _graph = new Graph();
-                _graph.NamespaceMap.AddNamespace(
-                    Schema.Prefix,
-                    Schema.Namespace
-                );
-
-                if (Container != null)
-                {
-                    using (var reader = new StreamReader(Container.GetStream()))
-                    {
-                        if (!reader.EndOfStream)
-                        {
-                            _parser.Load(_graph, reader);
-                        }
-                    }
-                }
-
-                return _graph;
-            }
-        }
-
-        public RdfStore(MainDocumentPart mainPart, bool autoSave)
-        {
-            _mainPart = mainPart;
-
-            _writer = new RdfXmlWriter();
-            _parser = new RdfXmlParser();
-
+            _tripleStore = new TripleStore();
             _autoSave = autoSave;
+
+            var g = new Graph();
+            _rangeGraph = new RangeGraph(g);
         }
 
-        public void Assert(Link link)
+        public void Dispose()
         {
-            var triples = link.ToTriples(Graph);
-            
-            Graph.Assert(triples);
-
-            if (_autoSave)
-            {
-                Save();
-            }
+            _tripleStore.Dispose();
         }
 
-        public void Retract(Link link)
+        public void AddGraph(Stream stream)
         {
-            throw new NotImplementedException();
+            var p = new NTriplesParser();
+            var g = new Graph();
+            var sr = new StreamReader(stream);
+            p.Load(g, sr);
 
-            // if (_autoSave)
-            // {
-            //     Save();
-            // }
+            _tripleStore.Add(g);
         }
 
-        public Link Get(int id)
+        public void RemoveGraph(Uri uri)
         {
-            var subject = Graph.GetBlankNode(Schema.Prefixed(id));
-            if (subject == null)
-            {
-                throw new InvalidOperationException(
-                    $"no triples with ID \"{subject}\" exist"
-                );
-            }
-
-            var triples = Graph.GetTriplesWithSubject(subject).ToArray();
-
-            if (triples.Length > 0)
-            {
-                return Link.FromTriples(id, triples);
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"a description with ID \"{id}\" does not exist"
-                );
-            }
-        }
-
-        public bool Exists(int id)
-        {
-            var subject = Graph.GetBlankNode(Schema.Prefixed(id));
-            var triples = Graph.GetTriplesWithSubject(subject);
-
-            if (triples.FirstOrDefault() == null)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
-        }
-
-        public void Save()
-        {
-            if (Container == null)
-            {
-                Container = NewContainer();
-            }
-
-            using (var ms = new MemoryStream())
-            {
-                var w = new StreamWriter(ms);
-                _writer.Save(Graph, w, true);
-
-                ms.Position = 0;
-                Container.FeedData(ms);
-            }
-        }
-
-        private CustomXmlPart? Load()
-        {
-            string id = TEXT_ANNOTATION_PART_ID;
-            _mainPart.TryGetPartById(id, out var part);
-            if (part is CustomXmlPart)
-            {
-                return (CustomXmlPart)part;
-            }
-            else if (part is null)
-            {
-                return null;
-            }
-            else
+            if (uri == RangeGraph.Uri)
             {
                 throw new ArgumentException(
-                    $"a part with ID \"{id}\" is not a custom XML part"
+                    "The range graph cannot be removed"
                 );
             }
+
+            _tripleStore.Remove(uri);   
         }
 
-        private CustomXmlPart NewContainer()
+        public void Load(Stream stream)
         {
-            return _mainPart.AddCustomXmlPart(
-                CustomXmlPartType.CustomXml, TEXT_ANNOTATION_PART_ID
-            );
+            var store = new TripleStore();
+            
+            var p = new NQuadsParser();
+            var sr = new StreamReader(stream);
+            p.Load(store, sr);
+
+            if (store.HasGraph(RangeGraph.Uri))
+            {
+                var g = store[RangeGraph.Uri];
+                _rangeGraph = new RangeGraph(g);
+            }
+
+            _tripleStore = store;
+        }
+
+        public void Save(Stream stream)
+        {
+            var w = new NQuadsWriter();
+            var sw = new StreamWriter(stream);
+            w.Save(_tripleStore, sw);
         }
     }
 }
