@@ -73,6 +73,9 @@ namespace Kumo
         {
             var w = new NQuadsWriter();
             var sw = new StreamWriter(stream);
+
+            _rangeGraph.MergeInto(_tripleStore);
+
             w.Save(_tripleStore, sw);
         }
     }

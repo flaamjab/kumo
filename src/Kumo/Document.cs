@@ -57,7 +57,7 @@ namespace Kumo
                 path, editable, openXmlSettings
             );
 
-            var p = new Package(d, settings.AutoSave);
+            var p = new Package(d, editable, settings.AutoSave);
             return new Document(p);
         }
 
@@ -100,7 +100,7 @@ namespace Kumo
                 stream, editable, openXmlSettings
             );
 
-            var p = new Package(d, settings.AutoSave);
+            var p = new Package(d, editable, settings.AutoSave);
             return new Document(p);
         }
 

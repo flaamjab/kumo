@@ -1,9 +1,6 @@
 using System;
-using System.IO;
 using System.Linq;
 using VDS.RDF;
-using VDS.RDF.Parsing;
-using VDS.RDF.Writing;
 
 namespace Kumo
 {
@@ -23,6 +20,7 @@ namespace Kumo
         public void Assert(Link link)
         {
             var triples = link.ToTriples(_graph);
+
             _graph.Assert(triples);
         }
 
@@ -42,6 +40,11 @@ namespace Kumo
         {
             var triples = _graph.GetTriplesWithSubject(uri);
             return Kumo.Link.FromTriples(uri, triples);
+        }
+
+        public void MergeInto(ITripleStore store)
+        {
+            store.Add(_graph, true);
         }
     }
 }

@@ -16,6 +16,7 @@ namespace Kumo
         private Lazy<RdfStore> _rdf;
         private UriStore _uri;
         private bool _autoSave;
+        private bool _editable;
 
         private RdfStore Rdf => _rdf.Value;
 
@@ -23,7 +24,7 @@ namespace Kumo
 
         public Uri Uri => _uri.Value;
 
-        public Package(WordprocessingDocument document, bool autoSave)
+        public Package(WordprocessingDocument document, bool editable, bool autoSave)
         {
             Content = new Content(this, document.MainDocumentPart.Document);
             _doc = document;
@@ -49,17 +50,22 @@ namespace Kumo
 
             _uri = new UriStore(document.MainDocumentPart);
             _bookmarkTable = new BookmarkTable(this);
+
+            _autoSave = autoSave;
+            _editable = editable;
         }
 
         public void Dispose()
         {
+            if (_editable)
+            {
+                Save();
+            }
             _doc.Dispose();
         }
 
         public void Save()
         {
-            _doc.Save();
-
             var part = CustomXmlPart(RdfStore.ID);
             if (part is null)
             {
@@ -70,12 +76,14 @@ namespace Kumo
             {
                 Rdf.Save(s);
             }
+
+            _doc.Save();
         }
 
         public Package Clone()
         {
             var clone = (WordprocessingDocument)_doc.Clone();
-            return new Package(clone, _autoSave);
+            return new Package(clone, _editable, _autoSave);
         }
 
         public IEnumerable<Property> Properties(Range range)
