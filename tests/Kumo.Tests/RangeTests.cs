@@ -59,7 +59,7 @@ namespace Kumo.Tests
         [InlineData(9, 15)]
         [InlineData(1, 11)]
         [InlineData(0, 11)]
-        public void Annotate_SingleAnnotation_DocumentHasNewAnnotation(
+        public void Attach_SingleAnnotation_DocumentHasNewAnnotation(
             int start, int end)
         {
             using (var d = Documents.Open("small", true))
@@ -69,7 +69,7 @@ namespace Kumo.Tests
                 r.Attach(
                     new Property(
                         new ("http://example.org/rel"),
-                        new Resource.Thing("http://example.org/val")
+                        new Resource.Unique("http://example.org/val")
                     )
                 );
 
@@ -78,18 +78,7 @@ namespace Kumo.Tests
         }
 
         [Fact]
-        public void Annotations_DocumentWithSingleAnnotation_OneAnnotation()
-        {
-            using (var d = Documents.Open("annotated"))
-            {
-                var annotations = d.Stars();
-
-                Assert.Single(annotations);
-            }
-        }
-
-        [Fact]
-        public void Annotate_TwoNonIntersectingRanges_EachHasAnnotation()
+        public void Attach_TwoNonIntersectingRanges_EachHasAnnotation()
         {
             using (var d = Documents.Open("medium", true))
             {
@@ -100,7 +89,7 @@ namespace Kumo.Tests
 
                 var property = new Property(
                     new ("http://example.org/predicate"),
-                    new Resource.Thing("http://example.org/value")
+                    new Resource.Unique("http://example.org/value")
                 );
 
                 rA.Attach(property);
@@ -112,7 +101,7 @@ namespace Kumo.Tests
         }
 
         [Fact]
-        public void Annotate_RangeWithinRangeOuterInner_EachHasAnnotation()
+        public void Attach_RangeWithinRangeOuterInner_EachHasAnnotation()
         {
             using (var d = Documents.Open("medium", true))
             {
@@ -121,7 +110,7 @@ namespace Kumo.Tests
 
                 var property = new Property(
                     new("https://example.org/rel"),
-                    new Resource.Thing("https://example.org/val")
+                    new Resource.Unique("https://example.org/val")
                 );
 
                 rA.Attach(property);
@@ -133,7 +122,7 @@ namespace Kumo.Tests
         }
 
         [Fact]
-        public void Annotate_MultiParagraphRange_RangeHasAnnotation()
+        public void Attach_MultiParagraphRange_RangeHasAnnotation()
         {
             using (var d = Documents.Open("small", true))
             {
@@ -141,12 +130,49 @@ namespace Kumo.Tests
 
                 var property = new Property(
                     new("http://example.org/rel"),
-                    new Resource.Thing("http://example.org/val")
+                    new Resource.Unique("http://example.org/val")
                 );
 
                 r.Attach(property);
 
                 Assert.Single(r.Properties, property);
+            }
+        }
+
+        [Fact]
+        public void Detach_SingleProperty_PropertyRemoved()
+        {
+            using (var d = Documents.Open("annotated", true))
+            {
+                var stars = d.Stars();
+                var range = stars.First();
+
+                var initialProperties = range.Properties;
+
+                var p = initialProperties.First();
+                range.Detach(p);
+
+                Assert.DoesNotContain(p, range.Properties);
+            }
+        }
+
+        [Fact]
+        public void AttachDetach_SingleProperty_PropertyRemoved()
+        {
+            var path = Documents.Named("small");
+            using (var d = Document.Open(path, true))
+            {
+                var range = d.Range(0, 6);
+                
+                var p = new Property(
+                    new Uri("https://example.org/predicate"),
+                    new Resource.Unique("https://example.org/object")
+                );
+
+                range.Attach(p);
+                range.Detach(p);
+
+                Assert.Empty(range.Properties);
             }
         }
     }
