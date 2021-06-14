@@ -117,5 +117,55 @@ namespace Kumo.Tests
 
             Assert.Single(g.Triples);
         }
+
+        [Fact]
+        public void Update_GraphAddedToStoreModified_TripleStoreIsSame()
+        {
+            var ts = new TripleStore();
+            var g = new Graph();
+            g.BaseUri = new Uri("https://example.org/graph");
+
+            ts.Add(g);
+
+            var t = new Triple(
+                g.CreateUriNode(new Uri("https://example.org/subject")),
+                g.CreateUriNode(new Uri("https://example.org/count")),
+                g.CreateUriNode(new Uri("https://example.org/object"))
+            );
+
+            g.Assert(t);
+
+            Assert.Single(ts.Triples);
+        }
+
+        [Fact]
+        public void Add_CopyOfGraphWithSameUriToStore_Success()
+        {
+            var ts = new TripleStore();
+            var g = new Graph();
+            var graphUri = new Uri("https://example.org/graph");
+            g.BaseUri = graphUri;
+
+            ts.Add(g);
+
+            var gClone = new Graph(g.Triples);
+            gClone.BaseUri = graphUri;
+
+            ts.Add(gClone, true);
+        }
+
+        [Fact]
+        public void Retract_TripleNotPresentInGraph_NoError()
+        {
+            var g = new Graph();
+
+            var t = new Triple(
+                g.CreateUriNode(new Uri("https://example.org/subject")),
+                g.CreateUriNode(new Uri("https://example.org/predicate")),
+                g.CreateUriNode(new Uri("https://example.org/object"))
+            );
+
+            g.Retract(t);
+        }
     }
 }

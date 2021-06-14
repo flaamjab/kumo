@@ -21,7 +21,7 @@ namespace Kumo.Tests
         {
             var path = Named(name);
             using (var fs = new FileStream(
-                path, FileMode.Open, FileAccess.ReadWrite))
+                path, FileMode.Open, FileAccess.Read))
             {
                 var ms = new MemoryStream();
                 fs.CopyTo(ms);
