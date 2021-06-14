@@ -66,7 +66,7 @@ namespace Kumo
                 using (var sr = new StreamReader(_container.GetStream(
                     FileMode.Open, FileAccess.Read)))
                 {
-                    var rawUri = sr.ReadToEnd();
+                    var rawUri = sr.ReadToEnd().Trim();
                     _uri = new Uri(rawUri);
                 }
             }

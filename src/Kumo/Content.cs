@@ -7,7 +7,7 @@ namespace Kumo
 {
     class Content
     {
-        private Package _holder;
+        private Package _parent;
 
         private W.Document _xml;
 
@@ -15,7 +15,7 @@ namespace Kumo
 
         public Content(Package holder, W.Document content)
         {
-            _holder = holder;
+            _parent = holder;
             _xml = content;
         }
 
@@ -24,15 +24,15 @@ namespace Kumo
             if (start >= end && start >= 0 && end > 0)
             {
                 throw new ArgumentException(
-                    "start parameter must be less than end parameter. "
+                    "Start parameter must be less than end parameter. "
                     + "both must be non-negative"
                 );
             }
 
-            return new Range(_holder, start, end);
+            return new Range(_parent, start, end);
         }
 
-        public IEnumerable<Range> Ranges(
+        public IEnumerable<Range> Entries(
             string text,
             StringComparison comparison)
         {
@@ -144,11 +144,13 @@ namespace Kumo
                     int rangeEnd = offsets[endRun] + endRun.InnerText.Length;
 
                     var range = Range(rangeStart, rangeEnd);
-                    return new Bookmark(id, this, range);
+                    return new Bookmark(
+                        id, this, range, b
+                    );
                 }
             );
 
-            return bookmarks.ToDictionary(b => b.Range as Range);
+            return bookmarks.ToDictionary(b => b.Range);
         }
     }
 }

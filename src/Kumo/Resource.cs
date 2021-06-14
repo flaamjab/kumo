@@ -36,7 +36,7 @@ public abstract record Resource
     };
 
     /// <summary>Represents a resource identified by a URI.</summary>
-    public sealed record Thing(Uri Uri) : Resource
+    public sealed record Unique(Uri Uri) : Resource
     {
         /// <summary>
         ///   Creates a new <c>Thing</c> identified by the provided URI string.
@@ -45,6 +45,6 @@ public abstract record Resource
         ///   Throws <c>UriFormatException</c> if the provided
         ///   URI string is invalid.
         /// </exception>
-        public Thing(string uri) : this(new Uri(uri)) { }
+        public Unique(string uri) : this(new Uri(uri)) { }
     }
 }

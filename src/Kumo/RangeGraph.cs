@@ -6,7 +6,7 @@ namespace Kumo
 {
     class RangeGraph
     {
-        public static readonly Uri Uri = new Uri(
+        public static Uri Uri = new Uri(
             "https://kumo.org/graph/rangeGraph"
         );
 
@@ -20,7 +20,6 @@ namespace Kumo
         public void Assert(Link link)
         {
             var triples = link.ToTriples(_graph);
-
             _graph.Assert(triples);
         }
 
@@ -40,11 +39,6 @@ namespace Kumo
         {
             var triples = _graph.GetTriplesWithSubject(uri);
             return Kumo.Link.FromTriples(uri, triples);
-        }
-
-        public void MergeInto(ITripleStore store)
-        {
-            store.Add(_graph, true);
         }
     }
 }

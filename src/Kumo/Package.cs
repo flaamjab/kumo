@@ -12,7 +12,7 @@ namespace Kumo
     class Package : IDisposable
     {
         private WordprocessingDocument _doc;
-        private BookmarkTable _bookmarkTable;
+        private BookmarkStore _bookmarkTable;
         private Lazy<RdfStore> _rdf;
         private UriStore _uri;
         private bool _autoSave;
@@ -24,14 +24,17 @@ namespace Kumo
 
         public Uri Uri => _uri.Value;
 
-        public Package(WordprocessingDocument document, bool editable, bool autoSave)
+        public Package(
+            WordprocessingDocument document,
+            bool editable,
+            bool autoSave)
         {
             Content = new Content(this, document.MainDocumentPart.Document);
             _doc = document;
 
             _rdf = new Lazy<RdfStore>(() =>
                 {
-                    var rdf = new RdfStore(autoSave);
+                    var rdf = new RdfStore();
                     var part = CustomXmlPart(RdfStore.ID);
 
                     if (part is not null)
@@ -49,7 +52,7 @@ namespace Kumo
             );
 
             _uri = new UriStore(document.MainDocumentPart);
-            _bookmarkTable = new BookmarkTable(this);
+            _bookmarkTable = new BookmarkStore(this);
 
             _autoSave = autoSave;
             _editable = editable;
@@ -62,6 +65,7 @@ namespace Kumo
                 Save();
             }
             _doc.Dispose();
+            Rdf.Dispose();
         }
 
         public void Save()
@@ -74,6 +78,7 @@ namespace Kumo
 
             using (var s = part.GetStream(FileMode.Open, FileAccess.Write))
             {
+                s.SetLength(0);
                 Rdf.Save(s);
             }
 
@@ -112,6 +117,13 @@ namespace Kumo
 
         public void Link(Range range, IEnumerable<Property> properties)
         {
+            if (!_editable)
+            {
+                throw new InvalidOperationException(
+                    "Cannot edit a document opened in read-only mode"
+                );
+            }
+
             if (!_bookmarkTable.Marked(range))
             {
                 _bookmarkTable.Mark(range);
@@ -121,17 +133,48 @@ namespace Kumo
 
             var g = Rdf.RangeGraph;
             g.Assert(link);
+
+            if (_autoSave)
+            {
+                Save();   
+            }
         }
 
         public void Unlink(Range range, IEnumerable<Property> properties)
         {
-            // Fetch the bookmark for this range.
-            // If the bookmark does not exist throw an exception.
-            // Otherwise, drop the bookmark, deassociate it with the range.
-            // Using the bookmark's ID, ask the rdfStore to remove
-            // the annotation.
+            var g = Rdf.RangeGraph;
+            // Ask the RdfStore if the range is annotated.
+            if (g.Exists(range.Uri))
+            {
+                // Proceed to remove properties if it is.
+                var link = new Link(range.Uri, properties);
+                g.Retract(link);
 
-            throw new NotImplementedException();
+                if (!g.Exists(range.Uri) && _bookmarkTable.Marked(range))
+                {
+                    _bookmarkTable.Unmark(range);   
+                }
+
+                if (_autoSave)
+                {
+                    Save();
+                }
+            }
+            else 
+            {
+                // otherwise throw.
+                throw new InvalidOperationException(
+                    $"The range {range.Uri} has no properties"
+                );
+            }
+        }
+
+        public Stream RdfStream()
+        {
+            var stream = new MemoryStream();
+            Rdf.Save(stream);
+
+            return new MemoryStream(stream.ToArray(), false);
         }
 
         private bool Known(Range range)
@@ -139,7 +182,6 @@ namespace Kumo
             var graph = Rdf.RangeGraph;
             if (_bookmarkTable.Marked(range))
             {
-                var b = _bookmarkTable.Lookup(range);
                 if (graph.Exists(range.Uri))
                 {
                     return true;
@@ -151,7 +193,6 @@ namespace Kumo
 
         private Link Link(Range range)
         {
-            var b = _bookmarkTable.Lookup(range);
             var g = Rdf.RangeGraph;
             if (!g.Exists(range.Uri))
             {

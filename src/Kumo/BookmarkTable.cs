@@ -6,50 +6,46 @@ using System.Linq;
 
 namespace Kumo
 {
-    class BookmarkTable
+    class BookmarkStore
     {
-        private Dictionary<Range, Bookmark>? _bookmarks;
-        private SortedSet<int>? _availableIds;
+        private Lazy<Dictionary<Range, Bookmark>> _table;
+        private Lazy<SortedSet<int>> _availableIds;
         private Package _holder;
 
-        private Dictionary<Range, Bookmark> Table
-        {
-            get
-            {
-                if (_bookmarks != null)
-                {
-                    return _bookmarks;
-                }
+        private Dictionary<Range, Bookmark> Table => _table.Value;
 
-                _bookmarks = _holder.Content.Bookmarks();
-                return _bookmarks;
-            }
-        }
+        private SortedSet<int> AvailableIds => _availableIds.Value;
 
-        public BookmarkTable(Package holder)
+        public BookmarkStore(Package holder)
         {
             _holder = holder;
-            _bookmarks = null;
-            _availableIds = null;
+
+            _table = new Lazy<Dictionary<Range, Bookmark>>(() =>
+                _holder.Content.Bookmarks()
+            );
+
+            _availableIds = new Lazy<SortedSet<int>>(() =>
+                {
+                    var ids = new SortedSet<int>(
+                        Table.Values.Select(b => b.Id)
+                    );
+
+                    var availableIds = new SortedSet<int>(Enumerable.Range(1, ids.Max));
+                    availableIds.SymmetricExceptWith(ids);
+                    if (ids.Max < int.MaxValue)
+                    {
+                        availableIds.Add(ids.Max + 1);
+                    }
+
+                    return availableIds;
+                }
+            );
         }
 
         public IEnumerable<Bookmark> Bookmarks()
         {
             var table = Table;
             return table.Values;
-        }
-
-        public Bookmark Lookup(Range range)
-        {
-            if (!Marked(range))
-            {
-                throw new InvalidOperationException(
-                    "the range is not marked"
-                );
-            }
-
-            var table = Table;
-            return table[range];
         }
 
         public Bookmark Lookup(int id)
@@ -63,7 +59,7 @@ namespace Kumo
             if (Marked(range))
             {
                 throw new InvalidOperationException(
-                    "the table already contains a bookmark for this range"
+                    "The table already contains a bookmark for this range"
                 );
             }
 
@@ -88,24 +84,23 @@ namespace Kumo
             if (!Marked(range))
             {
                 throw new InvalidOperationException(
-                    "the range is not marked"
+                    "The range is not marked"
                 );
             }
 
-            var table = Table;
-            var b = table[range];
+            var b = Table[range];
             b.Remove();
             ReleaseId(b.Id);
-            table.Remove(range);
+            Table.Remove(range);
         }
 
         private int AcquireId()
         {
-            var ids = AvailableIds();
+            var ids = AvailableIds;
             if (ids.Count == 0)
             {
                 throw new InvalidOperationException(
-                    "there are no bookmark IDs available"
+                    "There are no bookmark IDs available"
                 );
             }
 
@@ -118,7 +113,7 @@ namespace Kumo
             else
             {
                 throw new InvalidOperationException(
-                    "bookmark IDs have been exhausted"
+                    "Bookmark IDs have been exhausted"
                 );
             }
 
@@ -127,30 +122,8 @@ namespace Kumo
 
         private void ReleaseId(int id)
         {
-            var ids = AvailableIds();
+            var ids = AvailableIds;
             ids.Add(id);
-        }
-
-        private SortedSet<int> AvailableIds()
-        {
-            if (_availableIds != null)
-            {
-                return _availableIds;
-            }
-
-            var table = Table;
-            var ids = new SortedSet<int>(
-                table.Values.Select(b => b.Id)
-            );
-
-            _availableIds = new SortedSet<int>(Enumerable.Range(1, ids.Max));
-            _availableIds.SymmetricExceptWith(ids);
-            if (ids.Max < int.MaxValue)
-            {
-                _availableIds.Add(ids.Max + 1);
-            }
-
-            return _availableIds;
         }
     }
 }

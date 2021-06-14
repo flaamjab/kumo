@@ -172,11 +172,18 @@ namespace Kumo
         /// <summary>Enumerates all ranges for which text matches the provided.</summary>
         /// <param name="text">Text value to match.</param>
         /// <param name="comparison">The StringComparison to use for matching.</param>
-        public IEnumerable<Range> Ranges(
+        public IEnumerable<Range> Entries(
             string text,
             StringComparison comparison = StringComparison.CurrentCulture)
         {
-            return _package.Content.Ranges(text, comparison);
+            return _package.Content.Entries(text, comparison);
+        }
+
+        /// <summary>Presents all the RDF data in the document as a stream.</summary>
+        /// <remarks>The data in the stream is in N-Quads format.</remarks>
+        public Stream RdfStream()
+        {
+            return _package.RdfStream();
         }
     }
 

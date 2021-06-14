@@ -11,18 +11,17 @@ namespace Kumo
         public const string ID = "kumo-rdf-store";
 
         private TripleStore _tripleStore;
-        private bool _autoSave;
-        private RangeGraph _rangeGraph;
+        private IGraph _rangeGraph;
 
-        public RangeGraph RangeGraph => _rangeGraph;
+        public RangeGraph RangeGraph => new RangeGraph(_rangeGraph);
 
-        public RdfStore(bool autoSave)
+        public RdfStore()
         {
             _tripleStore = new TripleStore();
-            _autoSave = autoSave;
 
-            var g = new Graph();
-            _rangeGraph = new RangeGraph(g);
+            _rangeGraph = new Graph();
+            _rangeGraph.BaseUri = RangeGraph.Uri;
+            _tripleStore.Add(_rangeGraph);
         }
 
         public void Dispose()
@@ -49,13 +48,13 @@ namespace Kumo
                 );
             }
 
-            _tripleStore.Remove(uri);   
+            _tripleStore.Remove(uri);
         }
 
         public void Load(Stream stream)
         {
             var store = new TripleStore();
-            
+
             var p = new NQuadsParser();
             var sr = new StreamReader(stream);
             p.Load(store, sr);
@@ -63,7 +62,12 @@ namespace Kumo
             if (store.HasGraph(RangeGraph.Uri))
             {
                 var g = store[RangeGraph.Uri];
-                _rangeGraph = new RangeGraph(g);
+                g.Merge(_rangeGraph);
+                _rangeGraph = g;
+            }
+            else
+            {
+                store.Add(_rangeGraph);
             }
 
             _tripleStore = store;
@@ -73,8 +77,6 @@ namespace Kumo
         {
             var w = new NQuadsWriter();
             var sw = new StreamWriter(stream);
-
-            _rangeGraph.MergeInto(_tripleStore);
 
             w.Save(_tripleStore, sw);
         }

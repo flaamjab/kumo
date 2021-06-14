@@ -10,6 +10,11 @@
     <PackageIconUrl>kumo.png</PackageIconUrl>
     <PackageIcon>kumo.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>
+This version includes the following additions:
+- raw RDF data stored in the document is now accessible through RdfStream
+  method of the Document class;
+    </PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/flaamjab/kumo.git</RepositoryUrl>
   </PropertyGroup>

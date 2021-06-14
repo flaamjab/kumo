@@ -13,13 +13,11 @@ namespace Kumo
     {
         private readonly Package _holder;
 
-        private readonly Lazy<Uri> _uri;
-
         /// <summary>
         ///   Gets the URI that uniquely identifies a range within
         ///   the current document.
         /// </summary>
-        public Uri Uri => _uri.Value;
+        public Uri Uri;
 
         /// <summary>The start character position of the range.</summary>
         public int Start { get; }
@@ -35,12 +33,7 @@ namespace Kumo
             _holder = holder;
             Start = start;
             End = end;
-
-            _uri = new Lazy<Uri>(() => new Uri(Path.Combine(
-                Schema.Namespace.OriginalString,
-                "document",
-                $"range{Start}-{End}"
-            )));
+            Uri = new Uri($"{_holder.Uri.OriginalString}#range{Start}-{End}");
         }
 
         /// <summary>Retrieves raw text within this <c>Range</c>.</summary>
@@ -87,14 +80,29 @@ namespace Kumo
             _holder.Link(this, new Property[] { property });
         }
 
-        /// <summary>Attaches a collection of properties to this <c>Range</c>.</summary>
+        /// <summary>Attaches multiple properties to this <c>Range</c>.</summary>
         /// <param name="properties">The properties to annotate with.</param>
         public void Attach(IEnumerable<Property> properties)
         {
-            foreach (var p in properties)
-            {
-                Attach(p);
-            }
+            _holder.Link(this, properties);
+        }
+
+        /// <summary>Removes a property from this <c>Range</c>.</summary>
+        /// <param name="property">The property to remove.</param>
+        /// <remarks>No error will be thrown if the property being detached
+        /// is not associated with this <c>Range</c>.</remarks>
+        public void Detach(Property property)
+        {
+            _holder.Unlink(this, new Property[] { property });
+        }
+
+        /// <summary>Removes multiple properties from this <c>Range</c>.</summary>
+        /// <param name="properties">The properties to remove.</param>
+        /// <remarks>No error will be thrown in the case a property being detached
+        /// is not associated with this <c>Range</c>.</remarks>
+        public void Detach(IEnumerable<Property> properties)
+        {
+            _holder.Unlink(this, properties);
         }
 
         /// <summary>

@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using DocumentFormat.OpenXml;
-using DocumentFormat.OpenXml.Wordprocessing;
 using W = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Kumo
@@ -10,7 +9,7 @@ namespace Kumo
     {
         public const string BASENAME = "Kumo_Reference_";
 
-        private Content _holder;
+        private Content _parent;
 
         private W.BookmarkStart _bookmarkStart;
         private W.BookmarkEnd _bookmarkEnd;
@@ -19,11 +18,21 @@ namespace Kumo
 
         public Range Range { get; }
 
-        public Bookmark(int id, Content holder, Range range)
+        public Bookmark(int id, Content holder, Range range) :
+            this(id, holder, range, (null, null))
+        { }
+
+        public Bookmark(
+            int id,
+            Content holder,
+            Range range,
+            (W.BookmarkStart start, W.BookmarkEnd end) bounds)
         {
             Id = id;
-            _holder = holder;
+            _parent = holder;
             Range = range;
+            _bookmarkStart = bounds.start;
+            _bookmarkEnd = bounds.end;
         }
 
         public void Insert()
@@ -35,7 +44,7 @@ namespace Kumo
                 );
             }
 
-            var b = _holder.Block(Range);
+            var b = _parent.Block(Range);
             var (leftOffset, rightOffset) = Range.Offsets(b);
 
             _bookmarkStart = new W.BookmarkStart();
@@ -64,7 +73,7 @@ namespace Kumo
             }
         }
 
-        public Block Remove()
+        public void Remove()
         {
             if (_bookmarkStart == null || _bookmarkEnd == null)
             {
@@ -73,7 +82,8 @@ namespace Kumo
                 );
             }
 
-            throw new NotImplementedException();
+            _bookmarkStart.Remove();
+            _bookmarkEnd.Remove();
         }
 
         private void WrapMiddle(W.Run run, int leftOffset, int rightOffset)
@@ -174,7 +184,7 @@ namespace Kumo
                 rightPart
             });
 
-            return new (leftRun, rightRun);
+            return new(leftRun, rightRun);
         }
     }
 

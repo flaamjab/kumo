@@ -6,8 +6,8 @@ using VDS.RDF;
 namespace Kumo
 {
     /// <summary>
-    ///   Represents a subject node, with all 
-    ///   properties attached to it.
+    ///   Represents a link between the subject node and
+    ///   its properties.
     /// </summary>
     class Link
     {
@@ -28,7 +28,7 @@ namespace Kumo
                         LiteralNode n => new Resource.Literal(
                             n.Value, n.DataType, n.Language
                         ),
-                        UriNode n => new Resource.Thing(n.Uri),
+                        UriNode n => new Resource.Unique(n.Uri),
                         var n => throw new ArgumentException(
                             $"Unsupported node type (node {n}) "
                             + $"in triple {t}"
@@ -56,7 +56,7 @@ namespace Kumo
                     var pred = g.CreateUriNode(p.Name);
                     INode obj = p.Value switch
                     {
-                        Resource.Thing t => g.CreateUriNode(t.Uri),
+                        Resource.Unique t => g.CreateUriNode(t.Uri),
                         Resource.Literal L => g.CreateLiteralNode(
                             L.Value, L.Datatype
                         ),
