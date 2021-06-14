@@ -159,8 +159,7 @@ namespace Kumo.Tests
         [Fact]
         public void AttachDetach_SingleProperty_PropertyRemoved()
         {
-            var path = Documents.Named("small");
-            using (var d = Document.Open(path, true))
+            using (var d = Documents.Open("small", true))
             {
                 var range = d.Range(0, 6);
                 
