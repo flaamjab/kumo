@@ -103,7 +103,7 @@ namespace Kumo
             {
                 ids.Add(id + 1);
             }
-            else
+            else if (id == int.MaxValue)
             {
                 throw new InvalidOperationException(
                     "Bookmark IDs have been exhausted"

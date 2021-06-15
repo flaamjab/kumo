@@ -76,10 +76,14 @@ namespace Kumo
                 part = NewCustomXmlPart(RdfStore.ID, "text/plain");
             }
 
+            // Make sure RDf is loaded before attempting to save.
+            // Otherwise the stream will be opened a second time
+            // while being opened in update mode, which is an error.
+            var rdf = Rdf;
             using (var s = part.GetStream(FileMode.Open, FileAccess.Write))
             {
                 s.SetLength(0);
-                Rdf.Save(s);
+                rdf.Save(s);
             }
 
             _doc.Save();
