@@ -42,16 +42,9 @@ namespace Kumo
             );
         }
 
-        public IEnumerable<Bookmark> Bookmarks()
+        public IEnumerable<Range> MarkedRanges()
         {
-            var table = Table;
-            return table.Values;
-        }
-
-        public Bookmark Lookup(int id)
-        {
-            var values = Table.Values;
-            return values.First(b => b.Id == id);
+            return Table.Keys;
         }
 
         public Bookmark Mark(Range range)

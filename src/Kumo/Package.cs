@@ -12,7 +12,7 @@ namespace Kumo
     class Package : IDisposable
     {
         private WordprocessingDocument _doc;
-        private BookmarkStore _bookmarkTable;
+        private BookmarkStore _bookmarkStore;
         private Lazy<RdfStore> _rdf;
         private UriStore _uri;
         private bool _autoSave;
@@ -52,7 +52,7 @@ namespace Kumo
             );
 
             _uri = new UriStore(document.MainDocumentPart);
-            _bookmarkTable = new BookmarkStore(this);
+            _bookmarkStore = new BookmarkStore(this);
 
             _autoSave = autoSave;
             _editable = editable;
@@ -64,8 +64,8 @@ namespace Kumo
             {
                 Save();
             }
-            _doc.Dispose();
             Rdf.Dispose();
+            _doc.Dispose();
         }
 
         public void Save()
@@ -107,10 +107,7 @@ namespace Kumo
         public IEnumerable<Range> Stars()
         {
             var g = Rdf.RangeGraph;
-            var stars = _bookmarkTable
-                .Bookmarks()
-                .Where(b => g.Exists(b.Range.Uri))
-                .Select(b => b.Range);
+            var stars = _bookmarkStore.MarkedRanges();
 
             return stars;
         }
@@ -124,9 +121,9 @@ namespace Kumo
                 );
             }
 
-            if (!_bookmarkTable.Marked(range))
+            if (!_bookmarkStore.Marked(range))
             {
-                _bookmarkTable.Mark(range);
+                _bookmarkStore.Mark(range);
             }
 
             var link = new Link(range.Uri, properties);
@@ -150,9 +147,9 @@ namespace Kumo
                 var link = new Link(range.Uri, properties);
                 g.Retract(link);
 
-                if (!g.Exists(range.Uri) && _bookmarkTable.Marked(range))
+                if (!g.Exists(range.Uri) && _bookmarkStore.Marked(range))
                 {
-                    _bookmarkTable.Unmark(range);   
+                    _bookmarkStore.Unmark(range);   
                 }
 
                 if (_autoSave)
@@ -180,7 +177,7 @@ namespace Kumo
         private bool Known(Range range)
         {
             var graph = Rdf.RangeGraph;
-            if (_bookmarkTable.Marked(range))
+            if (_bookmarkStore.Marked(range))
             {
                 if (graph.Exists(range.Uri))
                 {

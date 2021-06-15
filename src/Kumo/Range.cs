@@ -13,11 +13,13 @@ namespace Kumo
     {
         private readonly Package _holder;
 
+        private readonly Lazy<Uri> _uri;
+
         /// <summary>
         ///   Gets the URI that uniquely identifies a range within
         ///   the current document.
         /// </summary>
-        public Uri Uri;
+        public Uri Uri => _uri.Value;
 
         /// <summary>The start character position of the range.</summary>
         public int Start { get; }
@@ -33,7 +35,10 @@ namespace Kumo
             _holder = holder;
             Start = start;
             End = end;
-            Uri = new Uri($"{_holder.Uri.OriginalString}#range{Start}-{End}");
+
+            _uri = new Lazy<Uri>(() => new Uri(
+                $"{_holder.Uri.OriginalString}#range{Start}-{End}"
+            ));
         }
 
         /// <summary>Retrieves raw text within this <c>Range</c>.</summary>
