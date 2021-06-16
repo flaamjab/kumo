@@ -31,11 +31,10 @@ namespace Kumo
 
                         var guid = Guid.NewGuid().ToString();
                         var time = DateTime.Now.ToString("yyyyMMddTHHMMss");
-                        Update(Path.Combine(
-                            Schema.Namespace.OriginalString,
-                            ROOT,
-                            $"{guid}-{time}"
-                        ));
+
+                        var b = new UriBuilder(Schema.Namespace);
+                        b.Path = $"{ROOT}/{guid}-{time}";
+                        Update(b.Uri);
                     }
                 }
                 
@@ -72,12 +71,12 @@ namespace Kumo
             }
         }
 
-        private void Update(string value)
+        private void Update(Uri value)
         {
             using (var sw = new StreamWriter(_container!.GetStream(
                 FileMode.Create, FileAccess.Write)))
             {
-                _uri = new Uri(value);
+                _uri = value;
                 sw.WriteLine(value);
             }
         }
