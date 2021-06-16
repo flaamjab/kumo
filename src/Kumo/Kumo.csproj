@@ -3,7 +3,7 @@
     <PackageId>Kumo</PackageId>
     <Title>Kumo Annotation Library</Title>
     <PackageDescription>Enriching Microsoft Word documents with semantic annotations.</PackageDescription>
-    <Version>0.3.0</Version>
+    <Version>0.3.1</Version>
     <Authors>lambda345</Authors>
     <Company>Perm State University</Company>
     <PackageTags>RDF;Microsoft Word;Annotation;Semantic Web</PackageTags>
@@ -11,18 +11,8 @@
     <PackageIcon>kumo.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageReleaseNotes>
-This version includes the following additions:
-- raw RDF data stored in the document is now accessible through RdfStream
-  method of the Document class;
-- properties can be detached from ranges by calling the Detach method of the
-  Range class;
-- the document and ranges are now assigned a URI that can be accessed
-  using the Uri properties of Document and Range classes respectively;
-
-Note that accessing range or document URIs for documents
-not previously edited with the library requires the documents
-to be opened with editable flag set to true.
-This will be fixed in the next version.
+Fixed a bug with UriFormatException being thrown when attempting to attach a property
+to a range in a fresh document on Windows.
     </PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/flaamjab/kumo.git</RepositoryUrl>
