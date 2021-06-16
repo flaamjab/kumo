@@ -2,7 +2,7 @@
 
 Enriching Microsoft Word documents with semantic annotations.
 
-![Kumo Icon](kumo.png)
+![Kumo Icon](./kumo.png)
 
 ## What is Kumo?
 
@@ -44,24 +44,52 @@ using (var d = Document.Open("path/to/document.docx"))
 ```
 
 To annotate a text fragment, one must create a Property object
-which represents an edge with node connected to it in a semantic net.
+which represents an edge with node connected to it in a knowledge graph.
 
 ```C#
 using System;
 using Kumo;
 
-using (var d = Document.Open("path/to/document.docx"))
+using (var d = Documents.Open("path/to/document", true))
 {
-    var range = d.Range(0, 42);
+    var r = d.Range(0, 42);
+
+    r.Attach(
+        new Property(
+            new("http://example.org/rel"),
+            new Resource.Unique("http://example.org/val")
+        )
+    );
+}
+```
+
+You can also attach multiple properties at once to a range.
+```C#
+using System;
+using Kumo;
+
+using var d = Documents.Open("path/to/document", true);
+{
+    var propertyName = new Uri("https://example.orh/references");
     
-    // The strings used to create a Property must be valid URIs.
-    var property = new Property(
-        "http://example.org/predicate",
-        "http://example.org/value"
+    var pA = new Property(
+        propertyName,
+        new Resource.Unique("https://example.org/A")
     );
 
-    // Annotate the text fragment with this property.
-    range.Attach(property);
+    var pB = new Property(
+        propertyName,
+        new Resource.Unique("https://example.org/B")
+    );
+
+    var pC = new Property(
+        propertyName,
+        new Resource.Unique("https://example.org/C")
+    );
+
+    var r = d.Range(0, 5);
+
+    r.Attach(new Property[] { pA, pB, pC });
 }
 ```
 
