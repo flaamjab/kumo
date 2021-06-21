@@ -62,19 +62,17 @@ namespace Kumo.Tests
         public void Attach_SingleAnnotation_DocumentHasNewAnnotation(
             int start, int end)
         {
-            using (var d = Documents.Open("small", true))
-            {
-                var r = d.Range(start, end);
+            using var d = Documents.Open("small", true);
+            var r = d.Range(start, end);
 
-                r.Attach(
-                    new Property(
-                        new ("http://example.org/rel"),
-                        new Resource.Unique("http://example.org/val")
-                    )
-                );
+            r.Attach(
+                new Property(
+                    new("http://example.org/rel"),
+                    new Resource.Unique("http://example.org/val")
+                )
+            );
 
-                Assert.Single(d.Stars(), r);
-            }
+            Assert.Single(d.Stars(), r);
         }
 
         [Fact]
@@ -88,7 +86,7 @@ namespace Kumo.Tests
                 var rB = d.Range(100, 200);
 
                 var property = new Property(
-                    new ("http://example.org/predicate"),
+                    new("http://example.org/predicate"),
                     new Resource.Unique("http://example.org/value")
                 );
 
@@ -103,40 +101,70 @@ namespace Kumo.Tests
         [Fact]
         public void Attach_RangeWithinRangeOuterInner_EachHasAnnotation()
         {
-            using (var d = Documents.Open("medium", true))
-            {
-                var rA = d.Range(0, 10);
-                var rB = d.Range(3, 7);
+            using var d = Documents.Open("medium", true);
+            var rA = d.Range(0, 10);
+            var rB = d.Range(3, 7);
 
-                var property = new Property(
-                    new("https://example.org/rel"),
-                    new Resource.Unique("https://example.org/val")
-                );
+            var property = new Property(
+                new("https://example.org/rel"),
+                new Resource.Unique("https://example.org/val")
+            );
 
-                rA.Attach(property);
-                rB.Attach(property);
+            rA.Attach(property);
+            rB.Attach(property);
 
-                Assert.Single(rA.Properties);
-                Assert.Single(rB.Properties);
-            }
+            Assert.Single(rA.Properties);
+            Assert.Single(rB.Properties);
         }
 
         [Fact]
-        public void Attach_MultiParagraphRange_RangeHasAnnotation()
+        public void Attach_MultiParagraphRange_RangeHasProperty()
         {
-            using (var d = Documents.Open("small", true))
-            {
-                var r = d.Range(0, 15);
+            using var d = Documents.Open("small", true);
+            var r = d.Range(0, 15);
 
-                var property = new Property(
-                    new("http://example.org/rel"),
-                    new Resource.Unique("http://example.org/val")
-                );
+            var property = new Property(
+                new("http://example.org/rel"),
+                new Resource.Unique("http://example.org/val")
+            );
 
-                r.Attach(property);
+            r.Attach(property);
 
-                Assert.Single(r.Properties, property);
-            }
+            Assert.Single(r.Properties, property);
+        }
+
+        [Fact]
+        public void Attach_MultipleProperties_RangeHasTheseProperties()
+        {
+            using var d = Documents.Open("small", true);
+
+            var propertyName = new Uri("https://example.orh/references");
+            
+            var pA = new Property(
+                propertyName,
+                new Resource.Unique("https://example.org/A")
+            );
+
+            var pB = new Property(
+                propertyName,
+                new Resource.Unique("https://example.org/B")
+            );
+
+            var pC = new Property(
+                propertyName,
+                new Resource.Unique("https://example.org/C")
+            );
+
+            var r = d.Range(0, 5);
+
+            r.Attach(new Property[] { pA, pB, pC });
+
+            Assert.Collection(
+                r.Properties,
+                _ => {},
+                _ => {},
+                _ => {}
+            );
         }
 
         [Fact]
@@ -162,7 +190,7 @@ namespace Kumo.Tests
             using (var d = Documents.Open("small", true))
             {
                 var range = d.Range(0, 6);
-                
+
                 var p = new Property(
                     new Uri("https://example.org/predicate"),
                     new Resource.Unique("https://example.org/object")
