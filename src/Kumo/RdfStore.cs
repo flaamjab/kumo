@@ -15,12 +15,16 @@ namespace Kumo
 
         public RangeGraph RangeGraph => new RangeGraph(_rangeGraph);
 
-        public RdfStore()
+        public RdfStore(Uri baseUri)
         {
             _tripleStore = new TripleStore();
 
             _rangeGraph = new Graph();
-            _rangeGraph.BaseUri = RangeGraph.Uri;
+
+            var b = new UriBuilder(baseUri);
+            b.Path += "#range-graph";
+            _rangeGraph.BaseUri = b.Uri;
+
             _tripleStore.Add(_rangeGraph);
         }
 
@@ -41,7 +45,7 @@ namespace Kumo
 
         public void RemoveGraph(Uri uri)
         {
-            if (uri == RangeGraph.Uri)
+            if (uri == _rangeGraph.BaseUri)
             {
                 throw new ArgumentException(
                     "The range graph cannot be removed"
@@ -59,9 +63,9 @@ namespace Kumo
             var sr = new StreamReader(stream);
             p.Load(store, sr);
 
-            if (store.HasGraph(RangeGraph.Uri))
+            if (store.HasGraph(_rangeGraph.BaseUri))
             {
-                var g = store[RangeGraph.Uri];
+                var g = store[_rangeGraph.BaseUri];
                 g.Merge(_rangeGraph);
                 _rangeGraph = g;
             }

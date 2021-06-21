@@ -33,9 +33,11 @@ namespace Kumo.OOXML
             _content = new Content(this, document.MainDocumentPart.Document);
             _doc = document;
 
+            _uri = new UriStore(document.MainDocumentPart);
+
             _rdf = new Lazy<RdfStore>(() =>
                 {
-                    var rdf = new RdfStore();
+                    var rdf = new RdfStore(Uri);
                     var part = CustomXmlPart(RdfStore.ID);
 
                     if (part is not null)
@@ -52,7 +54,6 @@ namespace Kumo.OOXML
                 }
             );
 
-            _uri = new UriStore(document.MainDocumentPart);
             _bookmarkStore = new BookmarkStore(_content);
 
             _autoSave = autoSave;
@@ -131,7 +132,7 @@ namespace Kumo.OOXML
                 _bookmarkStore.Mark(range);
             }
 
-            var link = new Link(range.Uri, properties);
+            var link = new Star(range.Uri, properties);
 
             var g = Rdf.RangeGraph;
             g.Assert(link);
@@ -149,7 +150,7 @@ namespace Kumo.OOXML
             if (g.Exists(range.Uri))
             {
                 // Proceed to remove properties if it is.
-                var link = new Link(range.Uri, properties);
+                var link = new Star(range.Uri, properties);
                 g.Retract(link);
 
                 if (!g.Exists(range.Uri) && _bookmarkStore.Marked(range))
@@ -193,7 +194,7 @@ namespace Kumo.OOXML
             return false;
         }
 
-        private Link Link(Range range)
+        private Star Link(Range range)
         {
             var g = Rdf.RangeGraph;
             if (!g.Exists(range.Uri))

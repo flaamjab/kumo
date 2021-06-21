@@ -6,10 +6,6 @@ namespace Kumo
 {
     class RangeGraph
     {
-        public static Uri Uri = new Uri(
-            "https://kumo.org/graph/rangeGraph"
-        );
-
         private IGraph _graph;
 
         public RangeGraph(IGraph graph)
@@ -17,13 +13,13 @@ namespace Kumo
             _graph = graph;
         }
 
-        public void Assert(Link link)
+        public void Assert(Star link)
         {
             var triples = link.ToTriples(_graph);
             _graph.Assert(triples);
         }
 
-        public void Retract(Link link)
+        public void Retract(Star link)
         {
             var triples = link.ToTriples(_graph);
             _graph.Retract(triples);
@@ -35,10 +31,10 @@ namespace Kumo
             return triples.Count() > 0;
         }
 
-        public Link Link(Uri uri)
+        public Star Link(Uri uri)
         {
             var triples = _graph.GetTriplesWithSubject(uri);
-            return Kumo.Link.FromTriples(uri, triples);
+            return Kumo.Star.FromTriples(uri, triples);
         }
     }
 }

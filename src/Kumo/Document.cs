@@ -132,14 +132,6 @@ namespace Kumo
             _package.Save();
         }
 
-        /// <summary>Enumerates all the paragraphs contained within the document.</summary>
-        /// <returns>All paragraphs within the document 
-        /// as instances of <c>Range</c>.</returns>
-        public IEnumerable<Range> Paragraphs()
-        {
-            throw new NotImplementedException();
-        }
-
         /// <summary>Flushes and saves the content,
         /// closes the document, and releases
         /// all resources.</summary>

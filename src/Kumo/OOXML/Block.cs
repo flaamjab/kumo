@@ -1,6 +1,6 @@
 using W = DocumentFormat.OpenXml.Wordprocessing;
 
-namespace Kumo
+namespace Kumo.OOXML
 {
     /// <summary>Represents a block of text nodes.</summary>
     class Block

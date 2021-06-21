@@ -19,6 +19,7 @@ namespace Kumo.OOXML
         public BookmarkStore(Content content)
         {
             _content = content;
+
             _table = new Lazy<Dictionary<Range, Bookmark>>(() =>
                 _content.Bookmarks()
             );

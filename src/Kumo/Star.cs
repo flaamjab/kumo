@@ -6,16 +6,16 @@ using VDS.RDF;
 namespace Kumo
 {
     /// <summary>
-    ///   Represents a link between the subject node and
+    ///   Represents the links between the subject node and
     ///   its properties.
     /// </summary>
-    class Link
+    class Star
     {
         public Uri Subject { get; }
 
         public IEnumerable<Property> Properties { get; }
 
-        public static Link FromTriples(
+        public static Star FromTriples(
             Uri subject,
             IEnumerable<Triple> triples)
         {
@@ -36,10 +36,10 @@ namespace Kumo
                     }
                 ));
 
-            return new Link(subject, properties);
+            return new Star(subject, properties);
         }
 
-        public Link(
+        public Star(
             Uri subject,
             IEnumerable<Property> properties)
         {
