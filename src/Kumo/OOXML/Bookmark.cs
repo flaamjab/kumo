@@ -3,7 +3,7 @@ using System.Linq;
 using DocumentFormat.OpenXml;
 using W = DocumentFormat.OpenXml.Wordprocessing;
 
-namespace Kumo
+namespace Kumo.OOXML
 {
     class Bookmark
     {

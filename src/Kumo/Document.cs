@@ -3,24 +3,25 @@ using System.Collections.Generic;
 using System.IO;
 using DocumentFormat.OpenXml.Packaging;
 using OpenXmlOpenSettings = DocumentFormat.OpenXml.Packaging.OpenSettings;
+using Kumo.OOXML;
 
 namespace Kumo
 {
     /// <summary>Represents an MS Word document.</summary>
     public class Document : IDisposable
     {
-        private Package _package;
+        private IPackage _package;
 
         /// <summary>
         ///   The text of the document, with no spaces or
         ///   newlines between paragraphs.
         /// </summary>
-        public string Text => _package.Content.Text;
+        public string Text => _package.Content.Text();
 
         /// <summary>Gets this document's URI</summary>
         public Uri Uri => _package.Uri;
 
-        private Document(Package package)
+        private Document(IPackage package)
         {
             _package = package;
         }

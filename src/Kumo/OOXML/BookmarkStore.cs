@@ -4,24 +4,23 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Kumo
+namespace Kumo.OOXML
 {
     class BookmarkStore
     {
         private Lazy<Dictionary<Range, Bookmark>> _table;
         private Lazy<SortedSet<int>> _availableIds;
-        private Package _holder;
+        private Content _content;
 
         private Dictionary<Range, Bookmark> Table => _table.Value;
 
         private SortedSet<int> AvailableIds => _availableIds.Value;
 
-        public BookmarkStore(Package holder)
+        public BookmarkStore(Content content)
         {
-            _holder = holder;
-
+            _content = content;
             _table = new Lazy<Dictionary<Range, Bookmark>>(() =>
-                _holder.Content.Bookmarks()
+                _content.Bookmarks()
             );
 
             _availableIds = new Lazy<SortedSet<int>>(() =>
@@ -59,7 +58,7 @@ namespace Kumo
             var table = Table;
             var id = AcquireId();
 
-            var b = new Bookmark(id, _holder.Content, range);
+            var b = new Bookmark(id, _content, range);
             b.Insert();
 
             table.Add(range, b);

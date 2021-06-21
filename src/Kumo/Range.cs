@@ -1,9 +1,8 @@
 ﻿#nullable enable
 
 using System;
-using System.IO;
-using System.Linq;
 using System.Collections.Generic;
+using Kumo.OOXML;
 
 namespace Kumo
 {
@@ -11,7 +10,7 @@ namespace Kumo
     /// to a text fragment within the document.</summary>
     public class Range : IEquatable<Range>
     {
-        private readonly Package _holder;
+        private readonly IPackage _holder;
 
         private readonly Lazy<Uri> _uri;
 
@@ -48,17 +47,18 @@ namespace Kumo
         /// <returns>Raw text that this <c>Range</c> spans.</returns>  
         public string Text()
         {
-            var block = _holder.Content.Block(this);
+            return _holder.Content.Text(Start, End);
+            // var block = _holder.Content.Block(this);
 
-            var textValues = block.Nodes.Select(n => n.Text);
-            var text = String.Join("", textValues);
+            // var textValues = block.Nodes.Select(n => n.Text);
+            // var text = String.Join("", textValues);
 
-            var (leftOffset, rightOffset) = this.Offsets(block);
+            // var (leftOffset, rightOffset) = this.Offsets(block);
 
-            return text.Substring(
-                leftOffset,
-                text.Length - leftOffset - rightOffset
-            );
+            // return text.Substring(
+            //     leftOffset,
+            //     text.Length - leftOffset - rightOffset
+            // );
         }
 
         /// <summary>

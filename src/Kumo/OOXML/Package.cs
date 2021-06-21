@@ -2,14 +2,13 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Collections.Generic;
 using DocumentFormat.OpenXml.Packaging;
 
-namespace Kumo
+namespace Kumo.OOXML
 {
     // Represents an OOXML package.
-    class Package : IDisposable
+    class Package : IPackage
     {
         private WordprocessingDocument _doc;
         private BookmarkStore _bookmarkStore;
@@ -18,9 +17,11 @@ namespace Kumo
         private bool _autoSave;
         private bool _editable;
 
+        private Content _content;
+
         private RdfStore Rdf => _rdf.Value;
 
-        public Content Content { get; }
+        public IContent Content => _content;
 
         public Uri Uri => _uri.Value;
 
@@ -29,7 +30,7 @@ namespace Kumo
             bool editable,
             bool autoSave)
         {
-            Content = new Content(this, document.MainDocumentPart.Document);
+            _content = new Content(this, document.MainDocumentPart.Document);
             _doc = document;
 
             _rdf = new Lazy<RdfStore>(() =>
@@ -52,7 +53,7 @@ namespace Kumo
             );
 
             _uri = new UriStore(document.MainDocumentPart);
-            _bookmarkStore = new BookmarkStore(this);
+            _bookmarkStore = new BookmarkStore(_content);
 
             _autoSave = autoSave;
             _editable = editable;
@@ -89,7 +90,7 @@ namespace Kumo
             _doc.Save();
         }
 
-        public Package Clone()
+        public IPackage Clone()
         {
             var clone = (WordprocessingDocument)_doc.Clone();
             return new Package(clone, _editable, _autoSave);

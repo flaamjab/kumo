@@ -3,20 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using W = DocumentFormat.OpenXml.Wordprocessing;
 
-namespace Kumo
+namespace Kumo.OOXML
 {
-    class Content
+    class Content : IContent
     {
         private Package _parent;
 
         private W.Document _xml;
 
-        public string Text => _xml.InnerText;
-
         public Content(Package holder, W.Document content)
         {
             _parent = holder;
             _xml = content;
+        }
+
+        public string Text()
+        {
+            return _xml.InnerText;
         }
 
         public Range Range(int start, int end)
@@ -111,7 +114,7 @@ namespace Kumo
                 .Where(b =>
                     {
                         return b.Name.Value.StartsWith(
-                            Kumo.Bookmark.BASENAME
+                            Bookmark.BASENAME
                         );
                     }
                 );
