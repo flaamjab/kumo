@@ -48,17 +48,6 @@ namespace Kumo
         public string Text()
         {
             return _holder.Content.Text(Start, End);
-            // var block = _holder.Content.Block(this);
-
-            // var textValues = block.Nodes.Select(n => n.Text);
-            // var text = String.Join("", textValues);
-
-            // var (leftOffset, rightOffset) = this.Offsets(block);
-
-            // return text.Substring(
-            //     leftOffset,
-            //     text.Length - leftOffset - rightOffset
-            // );
         }
 
         /// <summary>
