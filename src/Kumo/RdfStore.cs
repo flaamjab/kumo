@@ -59,7 +59,7 @@ namespace Kumo
         {
             var store = new TripleStore();
 
-            var p = new NQuadsParser();
+            var p = new TriGParser();
             var sr = new StreamReader(stream);
             p.Load(store, sr);
 
@@ -79,7 +79,7 @@ namespace Kumo
 
         public void Save(Stream stream)
         {
-            var w = new NQuadsWriter();
+            var w = new TriGWriter();
             var sw = new StreamWriter(stream);
 
             w.Save(_tripleStore, sw);
