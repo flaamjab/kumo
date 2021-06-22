@@ -75,7 +75,7 @@ namespace Kumo.OOXML
             var part = CustomXmlPart(RdfStore.ID);
             if (part is null)
             {
-                part = NewCustomXmlPart(RdfStore.ID, "text/plain");
+                part = AddCustomXmlPart(RdfStore.ID, "text/plain");
             }
 
             // Make sure RDf is loaded before attempting to save.
@@ -101,8 +101,8 @@ namespace Kumo.OOXML
         {
             if (Known(range))
             {
-                var link = Link(range);
-                return link.Properties;
+                var star = Star(range);
+                return star.Properties;
             }
             else
             {
@@ -194,17 +194,17 @@ namespace Kumo.OOXML
             return false;
         }
 
-        private Star Link(Range range)
+        private Star Star(Range range)
         {
             var g = Rdf.RangeGraph;
             if (!g.Exists(range.Uri))
             {
                 throw new InvalidOperationException(
-                    "The range is bookmarked but not present in the RDF store"
+                    "The range has no properties"
                 );
             }
 
-            return g.Link(range.Uri);
+            return g.Star(range.Uri);
         }
 
         private CustomXmlPart? CustomXmlPart(string id)
@@ -227,7 +227,7 @@ namespace Kumo.OOXML
             }
         }
 
-        private CustomXmlPart NewCustomXmlPart(string id, string contentType)
+        private CustomXmlPart AddCustomXmlPart(string id, string contentType)
         {
             return _doc.MainDocumentPart.AddCustomXmlPart(contentType, id);
         }

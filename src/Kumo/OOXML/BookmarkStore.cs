@@ -47,7 +47,7 @@ namespace Kumo.OOXML
             return Table.Keys;
         }
 
-        public Bookmark Mark(Range range)
+        public void Mark(Range range)
         {
             if (Marked(range))
             {
@@ -63,8 +63,6 @@ namespace Kumo.OOXML
             b.Insert();
 
             table.Add(range, b);
-
-            return b;
         }
 
         public bool Marked(Range range)

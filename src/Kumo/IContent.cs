@@ -15,6 +15,8 @@ namespace Kumo
 
         public Range Range(int start, int end);
 
+        public IEnumerable<Range> Paragraphs();
+
         public IEnumerable<Range> Entries(
             string text,
             StringComparison comparison);

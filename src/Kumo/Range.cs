@@ -57,7 +57,7 @@ namespace Kumo
         /// <returns>Paragraphs that this <c>Range</c> spans</returns>
         public IEnumerable<Range> Paragraphs()
         {
-            throw new NotImplementedException();
+            return _holder.Content.Paragraphs();
         }
 
         /// <summary>Annotates this <c>Range</c>.</summary>
@@ -97,32 +97,6 @@ namespace Kumo
         public void Detach(IEnumerable<Property> properties)
         {
             _holder.Unlink(this, properties);
-        }
-
-        /// <summary>
-        ///   <para>Gets a value indicating whether this <c>Range</c> is valid.</para>
-        ///   <para>
-        ///     A range is considered valid if it spans a sequence
-        ///     of neighboring runs. Runs are considered neighbors if they
-        ///     are within the same paragraph or directly neighboring
-        ///     paragraphs and there are no other runs between them.
-        ///   </para>
-        ///   <para>For example, the following ranges are not valid:</para>
-        ///   <list>
-        ///     <item>
-        ///       - A range that starts within a main body paragraph
-        ///       but ends inside a table paragraph.
-        ///     </item>
-        ///     <item>
-        ///       - A range that spans multiple table cells.
-        ///     </item>
-        ///   </list>
-        ///   <para>Only valid ranges can be annotated.</para>
-        /// </summary>
-        /// <returns>The value indicating whether this range is valid or not.</returns>
-        public bool Valid()
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>Decides whether two Ranges are same.</summary>

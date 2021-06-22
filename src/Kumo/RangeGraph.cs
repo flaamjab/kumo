@@ -13,15 +13,15 @@ namespace Kumo
             _graph = graph;
         }
 
-        public void Assert(Star link)
+        public void Assert(Star star)
         {
-            var triples = link.ToTriples(_graph);
+            var triples = star.ToTriples(_graph);
             _graph.Assert(triples);
         }
 
-        public void Retract(Star link)
+        public void Retract(Star star)
         {
-            var triples = link.ToTriples(_graph);
+            var triples = star.ToTriples(_graph);
             _graph.Retract(triples);
         }
 
@@ -31,7 +31,7 @@ namespace Kumo
             return triples.Count() > 0;
         }
 
-        public Star Link(Uri uri)
+        public Star Star(Uri uri)
         {
             var triples = _graph.GetTriplesWithSubject(uri);
             return Kumo.Star.FromTriples(uri, triples);

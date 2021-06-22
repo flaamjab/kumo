@@ -161,14 +161,14 @@ namespace Kumo.OOXML
 
             var leftText = text.Text[..point];
             var leftPart = new W.Text(leftText);
-            if (leftText.Untrimmed())
+            if (!leftText.Trimmed())
             {
                 leftPart.Space = SpaceProcessingModeValues.Preserve;
             }
 
             var rightText = text.Text[point..];
             var rightPart = new W.Text(rightText);
-            if (rightText.Untrimmed())
+            if (!rightText.Trimmed())
             {
                 rightPart.Space = SpaceProcessingModeValues.Preserve;
             }
@@ -184,13 +184,13 @@ namespace Kumo.OOXML
                 rightPart
             });
 
-            return new(leftRun, rightRun);
+            return (leftRun, rightRun);
         }
     }
 
     static class StringExtensions
     {
-        public static bool Untrimmed(this string s)
+        public static bool Trimmed(this string s)
         {
             bool leftOverhangs = s.First() == ' ';
             bool rightOverhangs = s.Last() == ' ';

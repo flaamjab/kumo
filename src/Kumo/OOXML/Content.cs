@@ -35,6 +35,11 @@ namespace Kumo.OOXML
             return new Range(_parent, start, end);
         }
 
+        public IEnumerable<Range> Paragraphs()
+        {
+            throw new NotImplementedException();
+        }
+
         public IEnumerable<Range> Entries(
             string text,
             StringComparison comparison)
